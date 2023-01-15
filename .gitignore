@@ -28,6 +28,7 @@ coverage
 
 # API keys and secrets
 .env
+.credentials
 
 # Dependency directory
 node_modules
@@ -48,6 +49,7 @@ dist/**/*
 yarn.lock
 
 build/**/*
+**/build/
 
 *.code-workspace
 # compiled output

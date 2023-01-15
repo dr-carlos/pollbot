@@ -10,6 +10,7 @@ export enum PollFeatureDTO {
   UNKNOWN = 0,
   DISABLE_RANDOMIZED_BALLOTS = 1,
   DISABLE_ANYTIME_RESULTS = 2,
+  DISABLE_PREFERENCES = 3,
   UNRECOGNIZED = -1,
 }
 
@@ -24,6 +25,9 @@ export function pollFeatureDTOFromJSON(object: any): PollFeatureDTO {
     case 2:
     case "DISABLE_ANYTIME_RESULTS":
       return PollFeatureDTO.DISABLE_ANYTIME_RESULTS;
+    case 3:
+    case "DISABLE_PREFERENCES":
+      return PollFeatureDTO.DISABLE_PREFERENCES;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -39,6 +43,8 @@ export function pollFeatureDTOToJSON(object: PollFeatureDTO): string {
       return "DISABLE_RANDOMIZED_BALLOTS";
     case PollFeatureDTO.DISABLE_ANYTIME_RESULTS:
       return "DISABLE_ANYTIME_RESULTS";
+    case PollFeatureDTO.DISABLE_PREFERENCES:
+      return "DISABLE_PREFERENCES";
     default:
       return "UNKNOWN";
   }
