@@ -29,6 +29,7 @@ export const POLL_FEATURES_MAPPER = {
   DISABLE_ANYTIME_RESULTS: PollFeatureDTO.DISABLE_ANYTIME_RESULTS,
   disablePreferences: PollFeatureDTO.DISABLE_PREFERENCES,
   DISABLE_PREFERENCES: PollFeatureDTO.DISABLE_PREFERENCES,
+  RANKED_PAIRS: PollFeatureDTO.RANKED_PAIRS,
 };
 type RecordKey = string | number | symbol;
 type Reverse<

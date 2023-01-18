@@ -92,7 +92,8 @@ export async function createPoll(
   optionsString: string,
   randomizedBallots: boolean,
   anytimeResults: boolean,
-  preferential: boolean
+  preferential: boolean,
+  rankedPairs: boolean
 ) {
   const ctx = await _ctx.defer();
   const optionsList = optionsString
@@ -127,6 +128,9 @@ export async function createPoll(
   }
   if (!preferential || optionsList.length == 2) {
     features.push(PollFeature.DISABLE_PREFERENCES);
+  }
+  if (rankedPairs) {
+    features.push(PollFeature.RANKED_PAIRS);
   }
 
   const context: Poll["context"] = {
@@ -206,7 +210,8 @@ export async function updatePoll(
   closesAt?: string,
   randomizedBallots?: boolean,
   anytimeResults?: boolean,
-  preferential?: boolean
+  preferential?: boolean,
+  rankedPairs?: boolean
 ) {
   const ctx = await _ctx.defer({ ephemeral: true });
   const poll = await storage.getPoll(pollId);
@@ -270,6 +275,15 @@ export async function updatePoll(
     } else {
       addPollFeature(poll, "disablePreferences");
       embed = embed.addField("preferential", "disabled");
+    }
+  }
+  if (rankedPairs !== undefined) {
+    if (rankedPairs) {
+      addPollFeature(poll, "RANKED_PAIRS");
+      embed = embed.addField("ranked_pairs", "disabled");
+    } else {
+      removePollFeature(poll, "RANKED_PAIRS");
+      embed = embed.addField("ranked_pairs", "enabled");
     }
   }
   await storage.updatePoll(poll.id, poll);
@@ -394,7 +408,7 @@ async function updatePollMessage(
 
 export async function closePoll(_ctx: Context<Interaction>, pollId: string) {
   const ctx = await _ctx.defer();
-  const poll = await storage.getPoll(pollId);
+  const poll: Poll | undefined = await storage.getPoll(pollId);
   if (!poll) {
     return await ctx.editReply(
       simpleSendable(`I couldn't find poll ${pollId}`)

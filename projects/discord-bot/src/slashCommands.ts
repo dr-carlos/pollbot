@@ -41,6 +41,14 @@ export const pollCreateCommand = new SlashCommandBuilder()
         "Allows users to select preferences when voting. (default: True)"
       )
       .setRequired(false)
+  )
+  .addBooleanOption((option) =>
+    option
+      .setName("ranked_pairs")
+      .setDescription(
+        "Use ranked pairs voting instead of instant-runoff voting. (default: False)"
+      )
+      .setRequired(false)
   );
 
 export const pollResultsCommand = new SlashCommandBuilder()
@@ -119,6 +127,14 @@ export const pollUpdateCommand = new SlashCommandBuilder()
       .setName("preferential")
       .setDescription(
         "Allows users to select preferences when voting. (default: True)"
+      )
+      .setRequired(false)
+  )
+  .addBooleanOption((option) =>
+    option
+      .setName("ranked_pairs")
+      .setDescription(
+        "Use ranked pairs voting instead of instant-runoff voting. (default: False)"
       )
       .setRequired(false)
   );

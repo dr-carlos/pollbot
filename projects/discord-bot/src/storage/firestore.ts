@@ -95,6 +95,7 @@ export class FirestoreStorage implements Storage {
             return "DISABLE_ANYTIME_RESULTS";
           if (feature === PollFeature.DISABLE_PREFERENCES)
             return "DISABLE_PREFERENCES";
+          if (feature === PollFeature.RANKED_PAIRS) return "RANKED_PAIRS";
         }
         return feature;
       }),
