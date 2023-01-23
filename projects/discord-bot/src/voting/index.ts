@@ -7,6 +7,7 @@ import { shuffled } from "../util/random";
 import { rankedPairs, showMatrix } from "./condorcet";
 import { RankingResults, RankingType, Vote, UserVotes } from "./interfaces";
 import { instantRunoff } from "./instantRunoff";
+import { firstPastThePost } from "./firstPastThePost";
 
 export function computeResults(
   poll: Poll,
@@ -14,7 +15,13 @@ export function computeResults(
 ): RankingResults | undefined {
   const optionKeys = Object.keys(poll?.options ?? {}).sort();
 
-  if (PollFeature.RANKED_PAIRS in poll.features) {
+  if (poll.features.includes(PollFeature.DISABLE_PREFERENCES)) {
+    const votes: string[] = ballots.map((b) => {
+      return Object.keys(b.votes)[0];
+    });
+
+    return firstPastThePost(votes);
+  } else if (poll.features.includes(PollFeature.RANKED_PAIRS)) {
     const votes: Vote[] = ballots.map((b) => {
       const v: Record<string, number> = {};
       optionKeys.forEach((k) => {
@@ -31,7 +38,7 @@ export function computeResults(
         v[k] = optionKeys.length - (b.votes[k]?.rank ?? optionKeys.length);
       });
       const k: string[] = Object.keys(v);
-      k.sort((a, b) => (v[a] < v[b] ? -1 : v[a] > v[b] ? 1 : 0));
+      k.sort((a, b) => (v[a] < v[b] ? 1 : v[a] > v[b] ? -1 : 0));
       return new UserVotes(k);
     });
     console.log(votes);
@@ -45,7 +52,9 @@ function displayRankingType(rankingType: RankingType): string {
     case "rankedPairs":
       return "**Ranked Pairs - Tideman** (<https://en.wikipedia.org/wiki/Ranked_pairs>)";
     case "instantRunoff":
-      return "**Instant Runoff** (<https://en.wikipedia.org/Instant-runoff_voting>)";
+      return "**Instant-Runoff** (<https://en.wikipedia.org/Instant-runoff_voting>)";
+    case "firstPastThePost":
+      return "**First-Past-the-Post** (<https://en.wikipedia.org/wiki/First-past-the-post_voting>)";
   }
 }
 
@@ -54,7 +63,12 @@ export function resultsSummary(
   results: RankingResults
 ): MessageEmbed {
   const footer = `Ranking Type: ${displayRankingType(results.rankingType)}\n`;
-  const columns = DEBUG ? ["rank", "option", "score"] : ["rank", "option"];
+
+  const columns =
+    DEBUG || results.rankingType == "firstPastThePost"
+      ? ["rank", "option", "score"]
+      : ["rank", "option"];
+
   const finalRankings = columnify(
     results.finalRankings.map(([key, score], i) => ({
       option: poll.options[key],
@@ -67,6 +81,7 @@ export function resultsSummary(
       columnSplitter: " | ",
     }
   );
+
   const metrics =
     `Ballot count: ${results.metrics.voteCount}\n` +
     `Time to compute: ${results.metrics.computeDuration.toFormat("S")}ms\n`;
@@ -94,7 +109,7 @@ export function resultsSummary(
   embed
     .addField("Metrics", metrics.substring(0, 1024))
     .addField("Info", footer.substring(0, 1024))
-    .setFooter(`${POLL_ID_PREFIX}${poll.id}`);
+    .setFooter({ text: `${POLL_ID_PREFIX}${poll.id}` });
   return embed;
 }
 

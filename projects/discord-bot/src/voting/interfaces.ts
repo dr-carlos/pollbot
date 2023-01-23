@@ -1,6 +1,6 @@
 import { Duration } from "luxon";
 
-export type RankingType = "rankedPairs" | "instantRunoff";
+export type RankingType = "rankedPairs" | "instantRunoff" | "firstPastThePost";
 
 /* Ranked Pairs */
 
