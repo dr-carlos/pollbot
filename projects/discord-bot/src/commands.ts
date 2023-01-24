@@ -147,10 +147,6 @@ export async function createPoll(
       simpleSendable("I couldn't make this poll. Something went wrong.")
     );
 
-  // ctx.guild?.roles.fetch(undefined, { force: true }).then((members) => {
-  //   console.log(members);
-  // });
-
   poll.roleCache = ctx.guild?.roles.cache;
 
   if (election) poll.closesAt = moment().add(3, "days").toDate();
@@ -665,8 +661,6 @@ export async function createBallotFromButton(ctx: Context<ButtonInteraction>) {
     await storage.updateBallot(ballot.id, ballot);
   }
 
-  console.log(ballot);
-
   let optionText = "";
   const disableRandomizedBallots =
     poll.features?.includes(PollFeature.DISABLE_RANDOMIZED_BALLOTS) ?? false;
@@ -764,7 +758,6 @@ export async function createBallot(
 
   let ballot = await storage.findBallot(poll.id, user.id);
   if (!ballot) {
-    console.log("created ballot");
     ballot = await storage.createBallot(poll, {
       pollId: poll.id,
       context: {
@@ -776,7 +769,6 @@ export async function createBallot(
       },
     });
   } else {
-    console.log("clearing ranks");
     for (const o in ballot.votes) {
       ballot.votes[o].rank = undefined;
     }
@@ -799,8 +791,6 @@ export async function createBallot(
     };
     await storage.updateBallot(ballot.id, ballot);
   }
-
-  // console.log(ballot);
 
   let optionText = "";
   const disableRandomizedBallots =
