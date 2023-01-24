@@ -20,7 +20,7 @@
     "typescript": "4.5"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "yarn --cwd ../../packages/idl-ts; tsc -p ../../packages/idl-ts; tsc",
     "watch": "tsc -w",
     "dev": "ts-node-dev src/index.ts --watch",
     "devProd": "NODE_ENV=production ts-node-dev src/index.ts --watch",

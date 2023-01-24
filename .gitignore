@@ -48,8 +48,7 @@ dist/**/*
 # ignore yarn.lock
 yarn.lock
 
-build/**/*
-**/build/
+build
 
 *.code-workspace
 # compiled output
