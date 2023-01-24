@@ -14,6 +14,7 @@ const client = new Discord.Client({
     "DIRECT_MESSAGES",
     "DIRECT_MESSAGE_REACTIONS",
     "GUILDS",
+    "GUILD_MEMBERS",
     "GUILD_MESSAGES",
     "GUILD_MESSAGE_REACTIONS",
   ],
@@ -62,6 +63,9 @@ async function handleCommandInteraction(
     switch (interaction.commandName) {
       case slashCommands.pollCreateCommand.name:
         await pollCreate(ctx);
+        break;
+      case slashCommands.pollElectionCommand.name:
+        await pollElection(ctx);
         break;
       case slashCommands.pollResultsCommand.name:
         await pollResults(ctx);
@@ -177,7 +181,72 @@ async function pollCreate(ctx: Context<Discord.CommandInteraction>) {
     randomizedBallots,
     anytimeResults,
     preferential,
-    rankedPairs
+    rankedPairs,
+    false
+  );
+}
+
+async function pollElection(ctx: Context<Discord.CommandInteraction>) {
+  const interaction = ctx.interaction;
+  const now: Date = new Date(Date.now());
+
+  let month: string;
+  switch (now.getMonth()) {
+    case 0:
+      month = "January";
+      break;
+    case 1:
+      month = "February";
+      break;
+    case 2:
+      month = "March";
+      break;
+    case 3:
+      month = "April";
+      break;
+    case 4:
+      month = "May";
+      break;
+    case 5:
+      month = "June";
+      break;
+    case 6:
+      month = "July";
+      break;
+    case 7:
+      month = "August";
+      break;
+    case 8:
+      month = "September";
+      break;
+    case 9:
+      month = "October";
+      break;
+    case 10:
+      month = "November";
+      break;
+    case 11:
+      month = "December";
+      break;
+    default:
+      month = "January";
+  }
+
+  const topic = `Server Election --- ${now.getDate()} ${month} ${now.getFullYear()}`;
+
+  const optionsString = interaction.options.getString("candidates", true);
+
+  if (interaction.channel?.type !== "GUILD_TEXT") return;
+
+  await commands.createPoll(
+    ctx,
+    topic,
+    optionsString,
+    true,
+    false,
+    true,
+    false,
+    true
   );
 }
 
@@ -396,7 +465,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
       L.d("Creating ballot...");
       await commands.createBallot(
         ctx,
-        reaction as Discord.MessageReaction,
+        (reaction as Discord.MessageReaction).message,
         user
       );
       return;

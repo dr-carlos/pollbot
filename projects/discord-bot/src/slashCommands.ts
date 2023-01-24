@@ -51,6 +51,16 @@ export const pollCreateCommand = new SlashCommandBuilder()
       .setRequired(false)
   );
 
+export const pollElectionCommand = new SlashCommandBuilder()
+  .setName("poll_election")
+  .setDescription("Create an election poll")
+  .addStringOption((option) =>
+    option
+      .setName("candidates")
+      .setDescription("Comma-separated candidate party names")
+      .setRequired(true)
+  );
+
 export const pollResultsCommand = new SlashCommandBuilder()
   .setName("poll_results")
   .setDescription("View poll results")
@@ -153,6 +163,7 @@ export const deleteMyUserDataCommand = new SlashCommandBuilder()
 
 const nonHelpCommands = [
   pollCreateCommand,
+  pollElectionCommand,
   pollResultsCommand,
   pollCloseCommand,
   pollAuditCommand,

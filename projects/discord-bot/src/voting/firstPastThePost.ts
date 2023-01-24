@@ -1,15 +1,5 @@
 import { Timer } from "../util/timer";
-import {
-  StringNumDict,
-  OptionNameToVoteCountsDict,
-  StageResult,
-  FinalResult,
-  UserVotes,
-  Option,
-  RankingResults,
-  RankingMetrics,
-  Vote,
-} from "./interfaces";
+import { RankingResults, RankingMetrics } from "./interfaces";
 
 export function firstPastThePost(votes: string[]): RankingResults | undefined {
   if (votes.length === 0) return;

@@ -2,7 +2,6 @@ import {
   ButtonInteraction,
   CommandInteraction,
   DiscordAPIError,
-  EnumValueMapped,
   GuildMember,
   Message,
   MessageActionRow,
@@ -10,14 +9,9 @@ import {
   MessageButton,
   MessageEditOptions,
   MessageEmbed,
-  MessageEmbedImage,
-  MessageReaction,
-  NewsChannel,
   PartialMessage,
   PartialUser,
   Team,
-  TextBasedChannel,
-  TextChannel,
   User,
 } from "discord.js";
 import moment from "moment-timezone";
@@ -50,6 +44,7 @@ import {
   pollAuditCommand,
   pollCloseCommand,
   pollCreateCommand,
+  pollElectionCommand,
   pollResultsCommand,
   pollUpdateCommand,
 } from "./slashCommands";
@@ -65,7 +60,7 @@ export const REMOVE_POLL_FEATURES_COMMAND = `${POLLBOT_PREFIX} removeFeatures`;
 export const SET_POLL_PROPERTIES_COMMAND = `${POLLBOT_PREFIX} set`;
 export const DELETE_MY_USER_DATA_COMMAND = `${POLLBOT_PREFIX} deleteMyUserData`;
 
-export const POLL_ID_PREFIX = "poll#";
+export const POLL_ID_PREFIX = "Poll ";
 
 export function isTeam(
   userTeam: User | Team | null | undefined
@@ -93,45 +88,43 @@ export async function createPoll(
   randomizedBallots: boolean,
   anytimeResults: boolean,
   preferential: boolean,
-  rankedPairs: boolean
+  rankedPairs: boolean,
+  election: boolean
 ) {
   const ctx = await _ctx.defer();
-  const optionsList = optionsString
+
+  const optionsList: string[] = optionsString
     .split(",")
     .map((o) => o.trim())
     .filter((o) => o !== "");
-  if (optionsList.length < 2) {
+
+  if (optionsList.length < 2)
     return await ctx.editReply(
       simpleSendable("You must specify at least two options in a poll.")
     );
-  }
-  if (optionsList.length > 26) {
+  if (optionsList.length > 26)
     return await ctx.editReply(
       simpleSendable("Polls cannot have more than 26 options")
     );
-  }
+
   const options: Record<PollOptionKey, Option> = {};
   optionsList.forEach((o, i) => {
     const key = String.fromCharCode(97 + i);
     options[key] = o;
   });
+
   if (!ctx.guild) {
     await ctx.editReply("Couldn't determine your server...");
     throw new Error("Couldn't determine guild...");
   }
+
   const features: PollFeature[] = [];
-  if (!randomizedBallots) {
-    features.push(PollFeature.DISABLE_RANDOMIZED_BALLOTS);
-  }
-  if (!anytimeResults) {
-    features.push(PollFeature.DISABLE_ANYTIME_RESULTS);
-  }
-  if (!preferential || optionsList.length == 2) {
+  if (!randomizedBallots) features.push(PollFeature.DISABLE_RANDOMIZED_BALLOTS);
+  if (!anytimeResults) features.push(PollFeature.DISABLE_ANYTIME_RESULTS);
+  if (!preferential || optionsList.length == 2)
     features.push(PollFeature.DISABLE_PREFERENCES);
-  }
-  if (rankedPairs) {
-    features.push(PollFeature.RANKED_PAIRS);
-  }
+  if (rankedPairs) features.push(PollFeature.RANKED_PAIRS);
+  if (election) features.push(PollFeature.ELECTION_POLL);
 
   const context: Poll["context"] = {
     $case: "discord",
@@ -140,31 +133,48 @@ export async function createPoll(
       ownerId: ctx.user.id,
     },
   };
+
   const pollConfig: PollConfig = {
     topic,
     options,
     features,
     context,
   };
+
   const poll = await storage.createPoll(pollConfig);
-  if (!poll) {
+  if (!poll)
     return await ctx.editReply(
       simpleSendable("I couldn't make this poll. Something went wrong.")
     );
-  }
+
+  // ctx.guild?.roles.fetch(undefined, { force: true }).then((members) => {
+  //   console.log(members);
+  // });
+
+  poll.roleCache = ctx.guild?.roles.cache;
+
+  if (election) poll.closesAt = moment().add(3, "days").toDate();
+
   const metrics = await storage.getPollMetrics(poll.id);
-  const pollMsgEmbed = createPollEmbed(ctx, poll, metrics);
   const pollMessage = await ctx.editReply({
-    embeds: [pollMsgEmbed],
-    components: [
-      new MessageActionRow().addComponents(
-        new MessageButton()
-          .setCustomId("request_ballot")
-          .setLabel("Request Ballot")
-          .setStyle("PRIMARY")
-      ),
-    ],
+    embeds: [await createPollEmbed(ctx, poll, metrics)],
+    components: election
+      ? []
+      : [
+          new MessageActionRow().addComponents(
+            new MessageButton()
+              .setCustomId("request_ballot")
+              .setLabel("Request Ballot")
+              .setStyle("PRIMARY")
+          ),
+        ],
   });
+
+  const pollMsgEmbed = await createPollEmbed(ctx, poll, metrics, {
+    message: pollMessage,
+  });
+  pollMessage.embeds = [pollMsgEmbed];
+
   if (poll.context?.$case === "discord") {
     poll.context.discord.messageRef = {
       channelId: pollMessage.channelId,
@@ -174,28 +184,84 @@ export async function createPoll(
   await storage.updatePoll(poll.id, poll);
 }
 
-function createPollEmbed(
+async function createPollEmbed(
   ctx: Context,
   poll: Poll,
   metrics?: PollMetricsDTO,
-  result?: Awaited<ReturnType<typeof getPollChannel>> & { message: Message }
-): MessageEmbed {
+  result?: { message: Message }
+): Promise<MessageEmbed> {
+  const election: boolean = poll.features.includes(PollFeature.ELECTION_POLL);
   const { message } = result ?? {};
   const closesAt = moment(poll.closesAt)
-    .tz("America/Los_Angeles")
+    .tz("Australia/Hobart")
     .format("dddd, MMMM Do YYYY, h:mm zz");
+
+  if (
+    election &&
+    message != null &&
+    !poll.features.includes(PollFeature.SENT_ELECTION_DMS)
+  ) {
+    const members = await ctx.guild?.members.fetch();
+    if (members != null) {
+      const candidateRoles: string[] = Object.values(poll.options).map(
+        (o) => ctx.guild?.roles.cache.find((role) => role.name === o)?.id ?? ""
+      );
+
+      const roleMap: { [roleID: string]: User[] } = {};
+      const nonCandidateVoters: User[] = [];
+
+      candidateRoles.forEach((roleID) => (roleMap[roleID] = []));
+
+      members.each(function (member) {
+        if (member.user.bot) return;
+
+        let candidate = false;
+
+        for (const role of member.roles.cache.values())
+          if (candidateRoles.includes(role.id)) {
+            roleMap[role.id].push(member.user);
+            candidate = true;
+          }
+
+        if (!candidate) nonCandidateVoters.push(member.user);
+      });
+
+      for (const users of Object.values(roleMap))
+        createBallot(
+          ctx,
+          message,
+          users[Math.floor(Math.random() * users.length)],
+          false
+        );
+
+      for (const user of nonCandidateVoters)
+        createBallot(ctx, message, user, false);
+
+      poll.features.push(PollFeature.SENT_ELECTION_DMS);
+    }
+  }
+
   const optionText = Object.values(poll?.options)
-    .map((o) => `\`${o}\``)
+    .map((o) =>
+      election
+        ? `<@&${poll.roleCache?.find((role) => role.name == o)?.id}>` ??
+          `\`${o}\``
+        : `\`${o}\``
+    )
     .join(", ");
   let footerText = `This poll closes at ${closesAt}`;
 
   if (metrics && message?.editable) {
-    footerText += `\nBallots: ${metrics.ballotsSubmitted} submitted / ${metrics.ballotsRequested} requested`;
+    footerText += `\nBallots: ${metrics.ballotsSubmitted} submitted / ${
+      metrics.ballotsRequested
+    } ${election ? "sent" : "requested"}`;
   }
   L.d(footerText);
   return new MessageEmbed({
     title: `${POLL_ID_PREFIX}${poll.id}`,
-    description: `React to this message for me to DM you a ballot`,
+    description: election
+      ? "Someone in each party has been DM-ed a ballot, as have all non-candidates."
+      : "React to this message for me to DM you a ballot",
   })
     .addField(poll.topic, optionText)
     .setFooter({
@@ -248,7 +314,9 @@ export async function updatePoll(
       });
     }
     poll.closesAt = date.toJSDate();
-    embed = embed.setFooter("closes_at").setTimestamp(date.toMillis());
+    embed = embed
+      .setFooter({ text: "closes_at" })
+      .setTimestamp(date.toMillis());
   }
   if (randomizedBallots !== undefined) {
     if (!randomizedBallots) {
@@ -293,8 +361,8 @@ export async function updatePoll(
   });
   try {
     const metrics = await storage.getPollMetrics(poll.id);
-    await updatePollMessage(ctx, poll, (channel) => ({
-      embeds: [createPollEmbed(ctx, poll, metrics, channel)],
+    await updatePollMessage(ctx, poll, async (channel) => ({
+      embeds: [await createPollEmbed(ctx, poll, metrics, channel)],
     }));
   } catch (e) {
     if (e instanceof DiscordAPIError && e.code === 50001) {
@@ -376,7 +444,7 @@ async function updatePollMessage(
   poll: Poll,
   optionsBuilder: (
     inputs: Awaited<ReturnType<typeof getPollChannel>> & { message: Message }
-  ) => MessageEditOptions
+  ) => Promise<MessageEditOptions>
 ) {
   const result = await getPollChannel(ctx, poll);
   if (!result) return;
@@ -393,10 +461,10 @@ async function updatePollMessage(
     const message = await channel.messages.fetch(messageRef.id);
     if (message.editable) {
       return await message.edit({
-        ...optionsBuilder({
+        ...(await optionsBuilder({
           ...result,
           message,
-        }),
+        })),
       });
     } else {
       L.d("Message is not editable");
@@ -429,8 +497,8 @@ export async function closePoll(_ctx: Context<Interaction>, pollId: string) {
   poll.closesAt = moment().toDate();
   await storage.updatePoll(poll.id, poll);
   const metrics = await storage.getPollMetrics(poll.id);
-  await updatePollMessage(ctx, poll, (channel) => ({
-    embeds: [createPollEmbed(ctx, poll, metrics, channel)],
+  await updatePollMessage(ctx, poll, async (channel) => ({
+    embeds: [await createPollEmbed(ctx, poll, metrics, channel)],
   }));
   try {
     const ballots = await storage.listBallots(poll.id);
@@ -442,8 +510,13 @@ export async function closePoll(_ctx: Context<Interaction>, pollId: string) {
         )
       );
     }
+
     const summary = resultsSummary(poll, results);
-    summary.setTitle(`${POLL_ID_PREFIX}${poll.id} is now closed.`);
+    summary.setTitle(
+      poll.features.includes(PollFeature.ELECTION_POLL)
+        ? "The election is now closed."
+        : `${POLL_ID_PREFIX}${poll.id} is now closed.`
+    );
     return await ctx.editReply({
       embeds: [summary],
     });
@@ -592,6 +665,8 @@ export async function createBallotFromButton(ctx: Context<ButtonInteraction>) {
     await storage.updateBallot(ballot.id, ballot);
   }
 
+  console.log(ballot);
+
   let optionText = "";
   const disableRandomizedBallots =
     poll.features?.includes(PollFeature.DISABLE_RANDOMIZED_BALLOTS) ?? false;
@@ -629,9 +704,9 @@ export async function createBallotFromButton(ctx: Context<ButtonInteraction>) {
       }\n` + `_Invalid options will be ignored_\n`
     )
     .addField(poll.topic, `\`\`\`\n${optionText}\n\`\`\``)
-    .setFooter(
-      `Privacy notice: Your user id and current user name is linked to your ballot. Your ballot is viewable by you and bot admins.\n\nballot#${ballot.id}`
-    );
+    .setFooter({
+      text: `Privacy notice: Your user id and current user name is linked to your ballot. Your ballot is viewable by you and bot admins.\n\nballot#${ballot.id}`,
+    });
   const dm = await user.send({
     embeds: [responseEmbed],
   });
@@ -646,20 +721,21 @@ export async function createBallotFromButton(ctx: Context<ButtonInteraction>) {
   });
 
   const metrics = await storage.getPollMetrics(poll.id);
-  await updatePollMessage(ctx, poll, (result) => ({
-    embeds: [createPollEmbed(ctx, poll, metrics, result)],
+  await updatePollMessage(ctx, poll, async (result) => ({
+    embeds: [await createPollEmbed(ctx, poll, metrics, result)],
   }));
 }
 
 export async function createBallot(
-  ctx: Context<MessageReaction>,
-  reaction: MessageReaction,
-  user: User | PartialUser
+  ctx: Context,
+  message: Message | PartialMessage,
+  user: User | PartialUser,
+  fromReaction = true
 ) {
-  const pollId = findPollId(reaction.message);
+  const pollId = findPollId(<Message | PartialMessage>message);
   if (!pollId) {
     L.d(
-      `Couldn't find poll for new ballot: ${reaction.message.content?.substring(
+      `Couldn't find poll for new ballot: ${message.content?.substring(
         0,
         POLL_ID_PREFIX.length
       )}`
@@ -680,12 +756,15 @@ export async function createBallot(
       )
     );
 
+  if (poll.features.includes(PollFeature.ELECTION_POLL) && fromReaction) return;
+
   if (poll.closesAt && poll.closesAt < moment().toDate()) {
     return await user.send(simpleSendable(`Poll ${poll.id} is closed.`));
   }
 
   let ballot = await storage.findBallot(poll.id, user.id);
   if (!ballot) {
+    console.log("created ballot");
     ballot = await storage.createBallot(poll, {
       pollId: poll.id,
       context: {
@@ -697,6 +776,7 @@ export async function createBallot(
       },
     });
   } else {
+    console.log("clearing ranks");
     for (const o in ballot.votes) {
       ballot.votes[o].rank = undefined;
     }
@@ -708,6 +788,19 @@ export async function createBallot(
       simpleSendable("There was an issue creating your ballot.")
     );
   }
+
+  if (ballot.context === undefined && user.username != null) {
+    ballot.context = {
+      $case: "discord",
+      discord: {
+        userId: user.id,
+        userName: user.username,
+      },
+    };
+    await storage.updateBallot(ballot.id, ballot);
+  }
+
+  // console.log(ballot);
 
   let optionText = "";
   const disableRandomizedBallots =
@@ -736,7 +829,7 @@ export async function createBallot(
     title: `${POLL_ID_PREFIX}${poll.id}`,
     description: `Here's your ballot.`,
   })
-    .setURL(reaction.message.url)
+    .setURL(message.url)
     .addField(
       "Instructions",
       `To vote, ${
@@ -746,16 +839,16 @@ export async function createBallot(
       }\n` + `_Invalid options will be ignored_\n`
     )
     .addField(poll.topic, `\`\`\`\n${optionText}\n\`\`\``)
-    .setFooter(
-      `Privacy notice: Your user id and current user name is linked to your ballot. Your ballot is viewable by you and bot admins.\n\nballot#${ballot.id}`
-    );
+    .setFooter({
+      text: `Privacy notice: Your user id and current user name is linked to your ballot. Your ballot is viewable by you and bot admins.\n\nballot#${ballot.id}`,
+    });
   await user.send({
     embeds: [responseEmbed],
   });
 
   const metrics = await storage.getPollMetrics(poll.id);
-  await updatePollMessage(ctx, poll, (channel) => ({
-    embeds: [createPollEmbed(ctx, poll, metrics, channel)],
+  await updatePollMessage(ctx, poll, async (channel) => ({
+    embeds: [await createPollEmbed(ctx, poll, metrics, channel)],
   }));
 }
 
@@ -820,13 +913,53 @@ export async function submitBallot(ctx: Context<Message>, message: Message) {
 
   const disableRandomizedBallot =
     poll.features?.includes(PollFeature.DISABLE_RANDOMIZED_BALLOTS) ?? false;
+  const disablePreferences =
+    poll.features?.includes(PollFeature.DISABLE_PREFERENCES) ?? false;
+  const isElection =
+    poll.features?.includes(PollFeature.ELECTION_POLL) ?? false;
 
   const ballotOptionMapping = ballot.ballotOptionMapping;
 
-  const disablePreferences =
-    poll.features?.includes(PollFeature.DISABLE_PREFERENCES) ?? false;
-
   if (disablePreferences) validVoteKeys = [validVoteKeys[0]];
+
+  if (isElection) {
+    let votedForSelf = false;
+
+    validVoteKeys.forEach((k) =>
+      poll.roleCache?.find(
+        (role) =>
+          role.name === poll.options[ballotOptionMapping[k]] &&
+          role.members.forEach(
+            (member) => member.userId === ctx.user.id && (votedForSelf = true)
+          )
+      )
+    );
+
+    if (votedForSelf)
+      return await message.channel.send(
+        simpleSendable("You cannot vote for yourself.")
+      );
+
+    let isCandidate = false;
+
+    Object.values(poll.options).forEach((v) =>
+      poll.roleCache?.find(
+        (role) =>
+          role.name === v &&
+          role.members.forEach(
+            (member) => member.userId === ctx.user.id && (isCandidate = true)
+          )
+      )
+    );
+
+    if (
+      validVoteKeys.length !==
+      Object.keys(poll.options).length + (isCandidate ? -1 : 0)
+    )
+      return await message.channel.send(
+        simpleSendable(`You must vote for all candidates except yourself.`)
+      );
+  }
 
   if (ballotOptionMapping && !disableRandomizedBallot) {
     votes = validVoteKeys.reduce((acc, ballotKey, i) => {
@@ -894,7 +1027,7 @@ export async function submitBallot(ctx: Context<Message>, message: Message) {
         summaryLines.join("\n") +
         `\`\`\``
     )
-    .setFooter(`${POLL_ID_PREFIX}${poll.id}\nballot#${ballot.id}`)
+    .setFooter({ text: `${POLL_ID_PREFIX}${poll.id}\nballot#${ballot.id}` })
     .setTimestamp();
 
   await message.channel.send({
@@ -902,8 +1035,8 @@ export async function submitBallot(ctx: Context<Message>, message: Message) {
   });
   const metrics = await storage.getPollMetrics(poll.id);
 
-  await updatePollMessage(ctx, poll, (channel) => ({
-    embeds: [createPollEmbed(ctx, poll, metrics, channel)],
+  await updatePollMessage(ctx, poll, async (channel) => ({
+    embeds: [await createPollEmbed(ctx, poll, metrics, channel)],
   }));
 }
 
@@ -949,6 +1082,7 @@ export function helpEmbed() {
     .addField(
       "Poll Commands",
       `${shortCommandHelp(pollCreateCommand)}\n` +
+        `${shortCommandHelp(pollElectionCommand)}\n` +
         `${shortCommandHelp(pollResultsCommand)}\n\n` +
         `_These are privileged commands for poll owners, admins, pollbot admins, and bot owners_\n` +
         `${shortCommandHelp(pollCloseCommand)}\n` +

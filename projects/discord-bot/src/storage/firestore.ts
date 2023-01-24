@@ -80,7 +80,7 @@ export class FirestoreStorage implements Storage {
       ...(Poll.toJSON(Poll.fromJSON(data)) as any),
       createdAt: createdAt,
       closesAt: closesAt,
-      features: data.features.map((feature: unknown) => {
+      features: data.features /*.map((feature: unknown) => {
         if (typeof feature === "string") {
           if (feature === "disableRandomizedBallots")
             return "DISABLE_RANDOMIZED_BALLOTS";
@@ -96,9 +96,10 @@ export class FirestoreStorage implements Storage {
           if (feature === PollFeature.DISABLE_PREFERENCES)
             return "DISABLE_PREFERENCES";
           if (feature === PollFeature.RANKED_PAIRS) return "RANKED_PAIRS";
+          if (feature === PollFeature.ELECTION_POLL) return "ELECTION_POLL";
         }
         return feature;
-      }),
+      })*/,
     });
     poll.features = poll.features.filter(
       (f) => f !== PollFeature.UNKNOWN && f !== PollFeature.UNRECOGNIZED

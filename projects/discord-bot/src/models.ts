@@ -8,6 +8,7 @@ export {
   BallotDTO as Ballot,
   PollRequestDTO as PollConfig,
   BallotRequestDTO as BallotConfig,
+  RoleDTO,
 } from "idl/lib/polls/v1/polls";
 export {
   GuildDataDTO as GuildData,
@@ -30,6 +31,7 @@ export const POLL_FEATURES_MAPPER = {
   disablePreferences: PollFeatureDTO.DISABLE_PREFERENCES,
   DISABLE_PREFERENCES: PollFeatureDTO.DISABLE_PREFERENCES,
   RANKED_PAIRS: PollFeatureDTO.RANKED_PAIRS,
+  ELECTION_POLL: PollFeatureDTO.ELECTION_POLL,
 };
 type RecordKey = string | number | symbol;
 type Reverse<

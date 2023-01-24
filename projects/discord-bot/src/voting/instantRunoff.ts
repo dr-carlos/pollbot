@@ -19,10 +19,8 @@ export function instantRunoff(
 
   const computeTimer = Timer.startTimer();
   const controller = new VoteController(options);
-  console.log(votes);
   controller.acceptPopulationVotes(votes);
   const finalResult = controller.getFinalResult();
-  console.log(finalResult.stageResults[0]);
   const finalRankings: [string, number][] = [
     [
       finalResult.winner ?? finalResult.tieOptions?.join(", ") ?? "no winner",

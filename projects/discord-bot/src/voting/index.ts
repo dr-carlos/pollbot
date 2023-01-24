@@ -41,7 +41,6 @@ export function computeResults(
       k.sort((a, b) => (v[a] < v[b] ? 1 : v[a] > v[b] ? -1 : 0));
       return new UserVotes(k);
     });
-    console.log(votes);
 
     return instantRunoff(optionKeys, votes);
   }
@@ -69,10 +68,15 @@ export function resultsSummary(
       ? ["rank", "option", "score"]
       : ["rank", "option"];
 
+  let rank = 1;
   const finalRankings = columnify(
     results.finalRankings.map(([key, score], i) => ({
       option: poll.options[key],
-      rank: i + 1,
+      rank:
+        i == results.finalRankings.length - 1 ||
+        results.finalRankings[i + 1][1] == score
+          ? rank
+          : rank++,
       score,
     })),
     {
@@ -87,23 +91,34 @@ export function resultsSummary(
     `Time to compute: ${results.metrics.computeDuration.toFormat("S")}ms\n`;
   const embed = new MessageEmbed({
     title: poll.topic,
-    description: "```" + finalRankings + "```",
+    description: poll.features.includes(PollFeature.ELECTION_POLL)
+      ? `<@&${
+          poll.roleCache?.find(
+            (role) => role.name === poll.options[results.finalRankings[0][0]]
+          )?.id ?? poll.options[results.finalRankings[0][0]]
+        }> wins!`
+      : "```" + finalRankings + "```",
   });
 
-  const closeCalls = [];
-  for (let i = 1; i < results.finalRankings.length; i++) {
-    const [prev, prevScore] = results.finalRankings[i - 1];
-    const [curr, currScore] = results.finalRankings[i];
-    if (prevScore <= currScore) {
-      closeCalls.push([prev, curr]);
+  if (results.rankingType === "rankedPairs") {
+    const closeCalls = [];
+    for (let i = 1; i < results.finalRankings.length; i++) {
+      const [prev, prevScore] = results.finalRankings[i - 1];
+      const [curr, currScore] = results.finalRankings[i];
+      if (prevScore <= currScore) {
+        closeCalls.push([prev, curr]);
+      }
     }
-  }
 
-  if (closeCalls.length > 0) {
-    const closeCallMsg = closeCalls
-      .map(([p, c]) => `- \`${poll.options[p]}\` beat \`${poll.options[c]}\``)
-      .join("\n");
-    embed.addField("These were close calls!", closeCallMsg.substring(0, 1024));
+    if (closeCalls.length > 0) {
+      const closeCallMsg = closeCalls
+        .map(([p, c]) => `- \`${poll.options[p]}\` beat \`${poll.options[c]}\``)
+        .join("\n");
+      embed.addField(
+        "These were close calls!",
+        closeCallMsg.substring(0, 1024)
+      );
+    }
   }
 
   embed

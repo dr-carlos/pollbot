@@ -12,6 +12,8 @@ export enum PollFeatureDTO {
   DISABLE_ANYTIME_RESULTS = 2,
   DISABLE_PREFERENCES = 3,
   RANKED_PAIRS = 4,
+  ELECTION_POLL = 5,
+  SENT_ELECTION_DMS = 6,
   UNRECOGNIZED = -1,
 }
 
@@ -32,6 +34,12 @@ export function pollFeatureDTOFromJSON(object: any): PollFeatureDTO {
     case 4:
     case "RANKED_PAIRS":
       return PollFeatureDTO.RANKED_PAIRS;
+    case 5:
+    case "ELECTION_POLL":
+      return PollFeatureDTO.ELECTION_POLL;
+    case 6:
+    case "SENT_ELECTION_DMS":
+      return PollFeatureDTO.SENT_ELECTION_DMS;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -51,6 +59,10 @@ export function pollFeatureDTOToJSON(object: PollFeatureDTO): string {
       return "DISABLE_PREFERENCES";
     case PollFeatureDTO.RANKED_PAIRS:
       return "RANKED_PAIRS";
+    case PollFeatureDTO.ELECTION_POLL:
+      return "ELECTION_POLL";
+    case PollFeatureDTO.SENT_ELECTION_DMS:
+      return "SENT_ELECTION_DMS";
     default:
       return "UNKNOWN";
   }
@@ -165,9 +177,45 @@ export interface PollDTO {
   features: PollFeatureDTO[];
   /** @deprecated */
   messageRef?: MessageRefDTO | undefined;
+  roleCache?: CollectionDTO<string, RoleDTO>;
   context?:
     | { $case: "discord"; discord: DiscordPollContextDTO }
     | { $case: "web"; web: WebPollContextDTO };
+}
+
+export interface RoleDTO {
+  toJSON(): any;
+  get members(): CollectionDTO<string, any>;
+  name: string;
+  id: string;
+}
+
+class CollectionDTO<K, V> extends Map<K, V> {
+  find<V2 extends V>(
+    fn: (value: V, key: K, collection: this) => value is V2
+  ): V2 | undefined;
+  find(fn: (value: V, key: K, collection: this) => unknown): V | undefined;
+  find<This, V2 extends V>(
+    fn: (this: This, value: V, key: K, collection: this) => value is V2,
+    thisArg: This
+  ): V2 | undefined;
+  find<This>(
+    fn: (this: This, value: V, key: K, collection: this) => unknown,
+    thisArg: This
+  ): V | undefined;
+  find(
+    fn: (value: V, key: K, collection: this) => unknown,
+    thisArg?: unknown
+  ): V | undefined {
+    if (typeof fn !== "function")
+      throw new TypeError(`${fn} is not a function`);
+    if (typeof thisArg !== "undefined") fn = fn.bind(thisArg);
+    for (const [key, val] of this) {
+      if (fn(val, key, this)) return val;
+    }
+
+    return undefined;
+  }
 }
 
 export interface PollDTO_OptionsEntry {
@@ -1773,6 +1821,9 @@ export const PollDTO = {
         ? fromJsonTimestamp(object.closesAt)
         : undefined,
       topic: isSet(object.topic) ? String(object.topic) : "",
+      roleCache: isSet(object.roleCache)
+        ? new CollectionDTO(JSON.parse(object.roleCache))
+        : undefined,
       options: isObject(object.options)
         ? Object.entries(object.options).reduce<{ [key: string]: string }>(
             (acc, [key, value]) => {
@@ -1818,6 +1869,18 @@ export const PollDTO = {
     message.closesAt !== undefined &&
       (obj.closesAt = message.closesAt.toISOString());
     message.topic !== undefined && (obj.topic = message.topic);
+    message.roleCache !== undefined &&
+      (obj.roleCache = JSON.stringify(
+        Array.from(message.roleCache.entries()).map((entry) => [
+          entry[0],
+          {
+            ...(typeof entry[1].toJSON !== "undefined"
+              ? entry[1].toJSON()
+              : entry[1]),
+            members: entry[1].members,
+          },
+        ])
+      ));
     obj.options = {};
     if (message.options) {
       Object.entries(message.options).forEach(([k, v]) => {
@@ -1847,6 +1910,7 @@ export const PollDTO = {
       (obj.web = message.context?.web
         ? WebPollContextDTO.toJSON(message.context?.web)
         : undefined);
+
     return obj;
   },
 
