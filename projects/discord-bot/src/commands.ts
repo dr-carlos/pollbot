@@ -31,6 +31,7 @@ import { showMatrix } from "./voting/condorcet";
 import { L, PREFIX } from "./settings";
 import { reverseLookup } from "./util/record";
 import { DateTime } from "luxon";
+import columnify from "columnify";
 import {
   AnySlashCommandBuilder,
   AnyUser,
@@ -507,15 +508,57 @@ export async function closePoll(_ctx: Context<Interaction>, pollId: string) {
       );
     }
 
-    const summary = resultsSummary(poll, results);
-    summary.setTitle(
-      poll.features.includes(PollFeature.ELECTION_POLL)
-        ? "The election is now closed."
-        : `${POLL_ID_PREFIX}${poll.id} is now closed.`
-    );
-    return await ctx.editReply({
-      embeds: [summary],
-    });
+    const election: boolean = poll.features.includes(PollFeature.ELECTION_POLL);
+
+    if (election) {
+      const options: string[] = Object.values(poll.options).sort();
+
+      const finalRankings = columnify(
+        ballots
+          .sort(() => 0.5 - Math.random())
+          .map((b) => {
+            const votes: Record<string, number | undefined> = {};
+            const votedOptions: string[] = Object.values(poll.options);
+            Object.values(b.votes).forEach((v) => {
+              votes[v.option] = v.rank;
+              votedOptions.splice(votedOptions.indexOf(v.option), 1);
+            });
+
+            votes[votedOptions[0]] = options.length;
+
+            return votes;
+          }),
+        {
+          columns: options,
+          align: "right",
+          columnSplitter: " | ",
+        }
+      );
+
+      const summary = resultsSummary(poll, results);
+      summary.setTitle("The election is now closed.");
+
+      const message = await ctx.editReply({
+        embeds: [summary],
+      });
+
+      await message.reply({
+        embeds: [
+          new MessageEmbed({
+            description: `Here's all ballot data for the election, where '1' is 1st preference, '2' is 2nd preference, '3' is 3rd, etc. You can manually see who won. \`\`\`${finalRankings}\`\`\``,
+          }),
+        ],
+      });
+
+      return message;
+    } else {
+      const summary = resultsSummary(poll, results);
+      summary.setTitle(`${POLL_ID_PREFIX}${poll.id} is now closed.`);
+
+      return await ctx.editReply({
+        embeds: [summary],
+      });
+    }
   } catch (e) {
     L.d(e);
     return await ctx.editReply(
@@ -726,7 +769,9 @@ export async function createBallot(
   user: User | PartialUser,
   fromReaction = true
 ) {
-  const pollId = findPollId(<Message | PartialMessage>message);
+  if (user == null) return;
+
+  const pollId = findPollId(message);
   if (!pollId) {
     L.d(
       `Couldn't find poll for new ballot: ${message.content?.substring(
@@ -1106,11 +1151,11 @@ function toCSVRows(
   return records.map((rec) => toCSVRow(columns, rec)).join("\n");
 }
 
-function toCSV(
+export function toCSV(
   columns: string[],
   records: Record<string, string | number | undefined>[]
-) {
-  const header = columns.join(",");
+): string {
+  const header: string = columns.join(",");
   return [header, toCSVRows(columns, records)].join("\n");
 }
 

@@ -89,15 +89,31 @@ export function resultsSummary(
   const metrics =
     `Ballot count: ${results.metrics.voteCount}\n` +
     `Time to compute: ${results.metrics.computeDuration.toFormat("S")}ms\n`;
-  const embed = new MessageEmbed({
-    title: poll.topic,
-    description: poll.features.includes(PollFeature.ELECTION_POLL)
+
+  const winners = results.finalRankings.filter((option) => option[1] === 1);
+
+  const description: string = poll.features.includes(PollFeature.ELECTION_POLL)
+    ? winners.length == 1
       ? `<@&${
           poll.roleCache?.find(
             (role) => role.name === poll.options[results.finalRankings[0][0]]
           )?.id ?? poll.options[results.finalRankings[0][0]]
         }> wins!`
-      : "```" + finalRankings + "```",
+      : winners
+          .map(
+            (winner) =>
+              "<@&" +
+                poll.roleCache?.find(
+                  (role) => role.name === poll.options[winner[0]]
+                )?.id +
+                ">" ?? poll.options[winner[0]]
+          )
+          .join(", ") + " tie!"
+    : "```" + finalRankings + "```";
+
+  const embed = new MessageEmbed({
+    title: poll.topic,
+    description,
   });
 
   if (results.rankingType === "rankedPairs") {
