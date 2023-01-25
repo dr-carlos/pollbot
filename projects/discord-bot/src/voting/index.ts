@@ -15,6 +15,10 @@ export function computeResults(
 ): RankingResults | undefined {
   const optionKeys = Object.keys(poll?.options ?? {}).sort();
 
+  for (let i = 0; i < ballots.length; i++)
+    if (Object.values(ballots[i].votes).every((option) => option.rank == null))
+      ballots.splice(i, 1);
+
   if (poll.features.includes(PollFeature.DISABLE_PREFERENCES)) {
     const votes: string[] = ballots.map((b) => {
       return Object.keys(b.votes)[0];
@@ -60,7 +64,7 @@ function displayRankingType(rankingType: RankingType): string {
 export function resultsSummary(
   poll: Poll,
   results: RankingResults
-): MessageEmbed {
+): [MessageEmbed, boolean] {
   const footer = `Ranking Type: ${displayRankingType(results.rankingType)}\n`;
 
   const columns =
@@ -69,37 +73,45 @@ export function resultsSummary(
       : ["rank", "option"];
 
   let rank = 1;
-  const finalRankings = columnify(
-    results.finalRankings.map(([key, score], i) => ({
-      option: poll.options[key],
-      rank:
-        i == results.finalRankings.length - 1 ||
-        results.finalRankings[i + 1][1] == score
-          ? rank
-          : rank++,
-      score,
-    })),
-    {
-      columns,
-      align: "right",
-      columnSplitter: " | ",
-    }
-  );
+  const rankingLines = results.finalRankings.map(([key, score], i) => ({
+    option: poll.options[key],
+    rank:
+      i == results.finalRankings.length - 1 ||
+      results.finalRankings[i + 1][1] == score
+        ? rank
+        : rank++,
+    score,
+  }));
+
+  if (results.rankingType === "firstPastThePost") rankingLines.reverse();
+
+  const finalRankings = columnify(rankingLines, {
+    columns,
+    align: "right",
+    columnSplitter: " | ",
+  });
 
   const metrics =
     `Ballot count: ${results.metrics.voteCount}\n` +
     `Time to compute: ${results.metrics.computeDuration.toFormat("S")}ms\n`;
 
-  const winners = results.finalRankings.filter((option) => option[1] === 1);
+  const finalRankingsSort = [...results.finalRankings];
 
+  finalRankingsSort.sort((a, b) => {
+    if (a[1] < b[1]) return -1;
+    if (a[1] > b[1]) return 1;
+    return 0;
+  });
+
+  const highestRanking: number = finalRankingsSort[0][1];
+  const winners = finalRankingsSort.filter(
+    (option) => option[1] === highestRanking
+  );
+
+  const tied: boolean = winners.length != 1;
   const description: string = poll.features.includes(PollFeature.ELECTION_POLL)
-    ? winners.length == 1
-      ? `<@&${
-          poll.roleCache?.find(
-            (role) => role.name === poll.options[results.finalRankings[0][0]]
-          )?.id ?? poll.options[results.finalRankings[0][0]]
-        }> wins!`
-      : winners
+    ? tied
+      ? winners
           .map(
             (winner) =>
               "<@&" +
@@ -109,6 +121,11 @@ export function resultsSummary(
                 ">" ?? poll.options[winner[0]]
           )
           .join(", ") + " tie!"
+      : `<@&${
+          poll.roleCache?.find(
+            (role) => role.name === poll.options[results.finalRankings[0][0]]
+          )?.id ?? poll.options[results.finalRankings[0][0]]
+        }> wins!`
     : "```" + finalRankings + "```";
 
   const embed = new MessageEmbed({
@@ -141,7 +158,7 @@ export function resultsSummary(
     .addField("Metrics", metrics.substring(0, 1024))
     .addField("Info", footer.substring(0, 1024))
     .setFooter({ text: `${POLL_ID_PREFIX}${poll.id}` });
-  return embed;
+  return [embed, tied];
 }
 
 export function explainResults(poll: Poll, results: RankingResults): string {

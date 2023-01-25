@@ -511,48 +511,50 @@ export async function closePoll(_ctx: Context<Interaction>, pollId: string) {
     const election: boolean = poll.features.includes(PollFeature.ELECTION_POLL);
 
     if (election) {
-      const options: string[] = Object.values(poll.options).sort();
-
-      const finalRankings = columnify(
-        ballots
-          .sort(() => 0.5 - Math.random())
-          .map((b) => {
-            const votes: Record<string, number | undefined> = {};
-            const votedOptions: string[] = Object.values(poll.options);
-            Object.values(b.votes).forEach((v) => {
-              votes[v.option] = v.rank;
-              votedOptions.splice(votedOptions.indexOf(v.option), 1);
-            });
-
-            votes[votedOptions[0]] = options.length;
-
-            return votes;
-          }),
-        {
-          columns: options,
-          align: "right",
-          columnSplitter: " | ",
-        }
-      );
-
-      const summary = resultsSummary(poll, results);
+      const [summary, tied] = resultsSummary(poll, results);
       summary.setTitle("The election is now closed.");
 
       const message = await ctx.editReply({
         embeds: [summary],
       });
 
-      await message.reply({
-        embeds: [
-          new MessageEmbed({
-            description: `Here's all ballot data for the election, where '1' is 1st preference, '2' is 2nd preference, '3' is 3rd, etc. You can manually see who won. \`\`\`${finalRankings}\`\`\``,
-          }),
-        ],
-      });
+      if (tied) {
+        const options: string[] = Object.values(poll.options).sort();
+
+        const finalRankings = columnify(
+          ballots
+            .sort(() => 0.5 - Math.random())
+            .map((b) => {
+              const votes: Record<string, number | undefined> = {};
+              const votedOptions: string[] = Object.values(poll.options);
+              Object.values(b.votes).forEach((v) => {
+                votes[v.option] = v.rank;
+                votedOptions.splice(votedOptions.indexOf(v.option), 1);
+              });
+
+              votes[votedOptions[0]] = options.length;
+
+              return votes;
+            }),
+          {
+            columns: options,
+            align: "right",
+            columnSplitter: " | ",
+          }
+        );
+
+        await message.reply({
+          embeds: [
+            new MessageEmbed({
+              description: `Here's all ballot data for the election, where '1' is 1st preference, '2' is 2nd preference, '3' is 3rd, etc. You can manually see who won. \`\`\`${finalRankings}\`\`\``,
+            }),
+          ],
+        });
+      }
 
       return message;
     } else {
-      const summary = resultsSummary(poll, results);
+      const summary = resultsSummary(poll, results)[0];
       summary.setTitle(`${POLL_ID_PREFIX}${poll.id} is now closed.`);
 
       return await ctx.editReply({
@@ -615,7 +617,7 @@ export async function pollResults(
     });
   }
 
-  const summary = resultsSummary(poll, results);
+  const summary = resultsSummary(poll, results)[0];
   return await ctx.editReply({
     embeds: [summary],
     ephemeral,
@@ -1238,7 +1240,7 @@ export async function auditPoll(
       ephemeral: true,
     });
   }
-  const summary = resultsSummary(poll, results);
+  const summary = resultsSummary(poll, results)[0];
   const matrixSummary = showMatrix(results.matrix);
   await ctx.editReply({
     embeds: [summary],
