@@ -37,9 +37,12 @@ export interface RankingResults {
 /* Instant Runoff */
 
 export class UserVotes extends Array<string> {
-  constructor(orderedVoteOptions: string[] = []) {
-    super();
-    this.push(...orderedVoteOptions);
+  constructor(orderedVoteOptions: string[] | number = []) {
+    if (typeof orderedVoteOptions === "number") super(orderedVoteOptions);
+    else {
+      super();
+      this.push(...orderedVoteOptions);
+    }
   }
 }
 

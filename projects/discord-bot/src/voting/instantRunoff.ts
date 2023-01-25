@@ -21,12 +21,10 @@ export function instantRunoff(
   const controller = new VoteController(options);
   controller.acceptPopulationVotes(votes);
   const finalResult = controller.getFinalResult();
-  const finalRankings: [string, number][] = [
-    [
-      finalResult.winner ?? finalResult.tieOptions?.join(", ") ?? "no winner",
-      1,
-    ],
-  ];
+  const finalRankings: [string, number][] =
+    finalResult.winner != null
+      ? [[finalResult.winner, 1]]
+      : finalResult.tieOptions?.map((o) => [o, 1]) ?? [];
   const metrics: RankingMetrics = {
     voteCount: votes.length,
     computeDuration: computeTimer.endTimer(),
@@ -44,9 +42,8 @@ export class VoteController {
   originalVotes: UserVotes[] = [];
 
   constructor(public options: Option[]) {
-    if (!options || options.length <= 0) {
+    if (!options || options.length <= 0)
       throw new Error("options are required");
-    }
     this.logic = new VoteControllerLogic(options);
   }
 
@@ -55,13 +52,11 @@ export class VoteController {
   }
 
   acceptPopulationVotes(allVotes: UserVotes[]): void {
-    for (let userVotes of allVotes) {
-      this.acceptUserVotes(userVotes);
-    }
+    for (const userVotes of allVotes) this.acceptUserVotes(userVotes);
   }
 
   getFinalResult(): FinalResult {
-    let finalResult = new FinalResult();
+    const finalResult = new FinalResult();
     finalResult.totalNumVoters = this.originalVotes.length;
 
     let stageResult = this.logic.getStageResult(this.originalVotes);
@@ -69,9 +64,9 @@ export class VoteController {
 
     let winner = this.logic.getStageWinner(stageResult);
     while (winner === null) {
-      let losers = this.logic.getLosers(stageResult);
+      const losers = this.logic.getLosers(stageResult);
 
-      let optionsWithRankOneVotes = this.logic.getOptionsWithRankOneVotes(
+      const optionsWithRankOneVotes = this.logic.getOptionsWithRankOneVotes(
         stageResult.rankedVoteCounts
       );
 
@@ -102,7 +97,7 @@ export class VoteControllerLogic {
 
   // This comparison method only works here because we're operating
   // on arrays where options only ever appear once
-  sameOptions(optionsA: string[], optionsB: string[]) {
+  sameOptions(optionsA: string[], optionsB: string[]): boolean {
     return (
       optionsA.length === optionsB.length &&
       optionsA.every((val) => optionsB.includes(val))
