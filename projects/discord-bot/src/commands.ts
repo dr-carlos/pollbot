@@ -90,7 +90,8 @@ export async function createPoll(
   anytimeResults: boolean,
   preferential: boolean,
   rankedPairs: boolean,
-  election: boolean
+  election: boolean,
+  forceAllPreferences: boolean
 ) {
   const ctx = await _ctx.defer();
 
@@ -126,6 +127,7 @@ export async function createPoll(
     features.push(PollFeature.DISABLE_PREFERENCES);
   if (rankedPairs) features.push(PollFeature.RANKED_PAIRS);
   if (election) features.push(PollFeature.ELECTION_POLL);
+  if (forceAllPreferences) features.push(PollFeature.FORCE_ALL_PREFERENCES);
 
   const context: Poll["context"] = {
     $case: "discord",
@@ -274,7 +276,8 @@ export async function updatePoll(
   randomizedBallots?: boolean,
   anytimeResults?: boolean,
   preferential?: boolean,
-  rankedPairs?: boolean
+  rankedPairs?: boolean,
+  forceAllPreferences?: boolean
 ) {
   const ctx = await _ctx.defer({ ephemeral: true });
   const poll = await storage.getPoll(pollId);
@@ -345,10 +348,19 @@ export async function updatePoll(
   if (rankedPairs !== undefined) {
     if (rankedPairs) {
       addPollFeature(poll, "RANKED_PAIRS");
-      embed = embed.addField("ranked_pairs", "disabled");
+      embed = embed.addField("ranked_pairs", "enabled");
     } else {
       removePollFeature(poll, "RANKED_PAIRS");
-      embed = embed.addField("ranked_pairs", "enabled");
+      embed = embed.addField("ranked_pairs", "disabled");
+    }
+  }
+  if (forceAllPreferences !== undefined) {
+    if (forceAllPreferences) {
+      addPollFeature(poll, "FORCE_ALL_PREFERENCES");
+      embed = embed.addField("force_all_preferences", "enabled");
+    } else {
+      removePollFeature(poll, "FORCE_ALL_PREFERENCES");
+      embed = embed.addField("force_all_preferences", "disabled");
     }
   }
   await storage.updatePoll(poll.id, poll);
@@ -954,10 +966,20 @@ export async function submitBallot(ctx: Context<Message>, message: Message) {
     poll.features?.includes(PollFeature.DISABLE_PREFERENCES) ?? false;
   const isElection =
     poll.features?.includes(PollFeature.ELECTION_POLL) ?? false;
+  const forceAllPreferences =
+    poll.features?.includes(PollFeature.FORCE_ALL_PREFERENCES) ?? false;
 
   const ballotOptionMapping = ballot.ballotOptionMapping;
 
   if (disablePreferences) validVoteKeys = [validVoteKeys[0]];
+
+  if (
+    forceAllPreferences &&
+    validVoteKeys.length < Object.keys(poll.options).length - 1
+  )
+    return await message.channel.send(
+      simpleSendable("You must preference all options.")
+    );
 
   if (isElection) {
     let votedForSelf = false;

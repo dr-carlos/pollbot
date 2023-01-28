@@ -32,6 +32,7 @@ export const POLL_FEATURES_MAPPER = {
   DISABLE_PREFERENCES: PollFeatureDTO.DISABLE_PREFERENCES,
   RANKED_PAIRS: PollFeatureDTO.RANKED_PAIRS,
   ELECTION_POLL: PollFeatureDTO.ELECTION_POLL,
+  FORCE_ALL_PREFERENCES: PollFeatureDTO.FORCE_ALL_PREFERENCES,
 };
 type RecordKey = string | number | symbol;
 type Reverse<

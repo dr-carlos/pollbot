@@ -173,6 +173,8 @@ async function pollCreate(ctx: Context<Discord.CommandInteraction>) {
     interaction.options.getBoolean("anytime_results") ?? true;
   const preferential = interaction.options.getBoolean("preferential") ?? true;
   const rankedPairs = interaction.options.getBoolean("ranked_pairs") ?? false;
+  const forceAllPreferences =
+    interaction.options.getBoolean("force_all_preferences") ?? false;
   if (interaction.channel?.type !== "GUILD_TEXT") return;
   await commands.createPoll(
     ctx,
@@ -182,7 +184,8 @@ async function pollCreate(ctx: Context<Discord.CommandInteraction>) {
     anytimeResults,
     preferential,
     rankedPairs,
-    false
+    false,
+    forceAllPreferences
   );
 }
 
@@ -246,7 +249,8 @@ async function pollElection(ctx: Context<Discord.CommandInteraction>) {
     false,
     true,
     false,
-    true
+    true,
+    false
   );
 }
 

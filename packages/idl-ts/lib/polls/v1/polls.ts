@@ -14,6 +14,7 @@ export enum PollFeatureDTO {
   RANKED_PAIRS = 4,
   ELECTION_POLL = 5,
   SENT_ELECTION_DMS = 6,
+  FORCE_ALL_PREFERENCES = 7,
   UNRECOGNIZED = -1,
 }
 
@@ -40,6 +41,9 @@ export function pollFeatureDTOFromJSON(object: any): PollFeatureDTO {
     case 6:
     case "SENT_ELECTION_DMS":
       return PollFeatureDTO.SENT_ELECTION_DMS;
+    case 7:
+    case "FORCE_ALL_PREFERENCES":
+      return PollFeatureDTO.FORCE_ALL_PREFERENCES;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -63,6 +67,8 @@ export function pollFeatureDTOToJSON(object: PollFeatureDTO): string {
       return "ELECTION_POLL";
     case PollFeatureDTO.SENT_ELECTION_DMS:
       return "SENT_ELECTION_DMS";
+    case PollFeatureDTO.FORCE_ALL_PREFERENCES:
+      return "FORCE_ALL_PREFERENCES";
     default:
       return "UNKNOWN";
   }
