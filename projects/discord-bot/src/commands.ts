@@ -964,8 +964,6 @@ export async function submitBallot(ctx: Context<Message>, message: Message) {
     poll.features?.includes(PollFeature.DISABLE_RANDOMIZED_BALLOTS) ?? false;
   const disablePreferences =
     poll.features?.includes(PollFeature.DISABLE_PREFERENCES) ?? false;
-  const isElection =
-    poll.features?.includes(PollFeature.ELECTION_POLL) ?? false;
   const forceAllPreferences =
     poll.features?.includes(PollFeature.FORCE_ALL_PREFERENCES) ?? false;
 
@@ -980,45 +978,6 @@ export async function submitBallot(ctx: Context<Message>, message: Message) {
     return await message.channel.send(
       simpleSendable("You must preference all options.")
     );
-
-  if (isElection) {
-    let votedForSelf = false;
-
-    validVoteKeys.forEach((k) =>
-      poll.roleCache?.find(
-        (role) =>
-          role.name === poll.options[ballotOptionMapping[k]] &&
-          role.members.forEach(
-            (member) => member.userId === ctx.user.id && (votedForSelf = true)
-          )
-      )
-    );
-
-    if (votedForSelf)
-      return await message.channel.send(
-        simpleSendable("You cannot vote for yourself.")
-      );
-
-    let isCandidate = false;
-
-    Object.values(poll.options).forEach((v) =>
-      poll.roleCache?.find(
-        (role) =>
-          role.name === v &&
-          role.members.forEach(
-            (member) => member.userId === ctx.user.id && (isCandidate = true)
-          )
-      )
-    );
-
-    if (
-      validVoteKeys.length !==
-      Object.keys(poll.options).length + (isCandidate ? -1 : 0)
-    )
-      return await message.channel.send(
-        simpleSendable(`You must vote for all candidates except yourself.`)
-      );
-  }
 
   if (ballotOptionMapping && !disableRandomizedBallot) {
     votes = validVoteKeys.reduce((acc, ballotKey, i) => {

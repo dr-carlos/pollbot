@@ -250,7 +250,7 @@ async function pollElection(ctx: Context<Discord.CommandInteraction>) {
     true,
     false,
     true,
-    false
+    true
   );
 }
 
