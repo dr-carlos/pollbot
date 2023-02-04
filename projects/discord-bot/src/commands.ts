@@ -157,16 +157,14 @@ export async function createPoll(
   const metrics = await storage.getPollMetrics(poll.id);
   const pollMessage = await ctx.editReply({
     embeds: [await createPollEmbed(ctx, poll, metrics)],
-    components: election
-      ? []
-      : [
-          new MessageActionRow().addComponents(
-            new MessageButton()
-              .setCustomId("request_ballot")
-              .setLabel("Request Ballot")
-              .setStyle("PRIMARY")
-          ),
-        ],
+    components: [
+      new MessageActionRow().addComponents(
+        new MessageButton()
+          .setCustomId("request_ballot")
+          .setLabel(election ? "Re-Request Ballot" : "Request Ballot")
+          .setStyle("PRIMARY")
+      ),
+    ],
   });
 
   const pollMsgEmbed = await createPollEmbed(ctx, poll, metrics, {
@@ -684,6 +682,13 @@ export async function createBallotFromButton(ctx: Context<ButtonInteraction>) {
 
   let ballot = await storage.findBallot(poll.id, user.id);
   if (!ballot) {
+    if (poll.features.includes(PollFeature.ELECTION_POLL))
+      return await user.send(
+        simpleSendable(
+          "You were not sent a ballot. Please check with other members of your party to see if they were sent the ballot."
+        )
+      );
+
     ballot = await storage.createBallot(poll, {
       pollId: poll.id,
       context: {

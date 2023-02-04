@@ -162,12 +162,16 @@ export class VoteControllerLogic {
 
     const eliminationScenarioCounts: StringNumDict = {};
 
+    console.log(losers);
     for (const loser of losers) {
       const nextStageResultWithoutLoser = this.getNextStageResult(
         currentStageResult,
         [loser]
       );
 
+      console.log("loser");
+      console.log(loser);
+      console.log(nextStageResultWithoutLoser);
       for (const optionName in nextStageResultWithoutLoser.rankedVoteCounts) {
         if (!losers.includes(optionName)) continue;
 
@@ -179,6 +183,7 @@ export class VoteControllerLogic {
           eliminationScenarioCounts[optionName] += rankOneVotes;
         else eliminationScenarioCounts[optionName] = rankOneVotes;
       }
+      console.log(eliminationScenarioCounts);
     }
 
     fewestRankOneVotes = Math.min(...Object.values(eliminationScenarioCounts));
@@ -187,6 +192,7 @@ export class VoteControllerLogic {
       .filter((key) => eliminationScenarioCounts[key] == fewestRankOneVotes)
       .map((key) => key);
 
+    console.log(worstLosers);
     return worstLosers;
   }
 

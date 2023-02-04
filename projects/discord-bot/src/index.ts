@@ -122,7 +122,7 @@ async function handleButtonInteraction(interaction: Discord.ButtonInteraction) {
   const ctx = context.withButtonInteraction(interaction);
   switch (interaction.customId) {
     case "request_ballot":
-      await commands.createBallotFromButton(ctx);
+      await commands.createBallotFromButton(ctx, false);
       break;
   }
 }
