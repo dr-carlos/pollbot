@@ -6,6 +6,10 @@ export declare enum PollFeatureDTO {
     DISABLE_RANDOMIZED_BALLOTS = 1,
     DISABLE_ANYTIME_RESULTS = 2,
     DISABLE_PREFERENCES = 3,
+    RANKED_PAIRS = 4,
+    ELECTION_POLL = 5,
+    SENT_ELECTION_DMS = 6,
+    FORCE_ALL_PREFERENCES = 7,
     UNRECOGNIZED = -1
 }
 export declare function pollFeatureDTOFromJSON(object: any): PollFeatureDTO;
@@ -118,6 +122,7 @@ export interface PollDTO {
     };
     features: PollFeatureDTO[];
     messageRef?: MessageRefDTO | undefined;
+    roleCache?: CollectionDTO<string, RoleDTO>;
     context?: {
         $case: "discord";
         discord: DiscordPollContextDTO;
@@ -125,6 +130,18 @@ export interface PollDTO {
         $case: "web";
         web: WebPollContextDTO;
     };
+}
+export interface RoleDTO {
+    toJSON(): any;
+    get members(): CollectionDTO<string, any>;
+    name: string;
+    id: string;
+}
+declare class CollectionDTO<K, V> extends Map<K, V> {
+    find<V2 extends V>(fn: (value: V, key: K, collection: this) => value is V2): V2 | undefined;
+    find(fn: (value: V, key: K, collection: this) => unknown): V | undefined;
+    find<This, V2 extends V>(fn: (this: This, value: V, key: K, collection: this) => value is V2, thisArg: This): V2 | undefined;
+    find<This>(fn: (this: This, value: V, key: K, collection: this) => unknown, thisArg: This): V | undefined;
 }
 export interface PollDTO_OptionsEntry {
     key: string;
@@ -212,6 +229,26 @@ export declare const ReadPollResponse: {
                 id?: string | undefined;
                 channelId?: string | undefined;
             } | undefined;
+            roleCache?: {
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
+            } | undefined;
             context?: ({
                 discord?: {
                     guildId?: string | undefined;
@@ -280,6 +317,26 @@ export declare const ReadPollResponse: {
             messageRef?: {
                 id?: string | undefined;
                 channelId?: string | undefined;
+            } | undefined;
+            roleCache?: {
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
             } | undefined;
             context?: ({
                 discord?: {
@@ -445,6 +502,45 @@ export declare const ReadPollResponse: {
                 id?: string | undefined;
                 channelId?: string | undefined;
             } & Record<Exclude<keyof I["poll"]["messageRef"], keyof MessageRefDTO>, never>) | undefined;
+            roleCache?: ({
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
+            } & {
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
+            } & Record<Exclude<keyof I["poll"]["roleCache"], keyof CollectionDTO<string, RoleDTO>>, never>) | undefined;
             context?: ({
                 discord?: {
                     guildId?: string | undefined;
@@ -660,6 +756,26 @@ export declare const CreatePollResponse: {
                 id?: string | undefined;
                 channelId?: string | undefined;
             } | undefined;
+            roleCache?: {
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
+            } | undefined;
             context?: ({
                 discord?: {
                     guildId?: string | undefined;
@@ -728,6 +844,26 @@ export declare const CreatePollResponse: {
             messageRef?: {
                 id?: string | undefined;
                 channelId?: string | undefined;
+            } | undefined;
+            roleCache?: {
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
             } | undefined;
             context?: ({
                 discord?: {
@@ -893,6 +1029,45 @@ export declare const CreatePollResponse: {
                 id?: string | undefined;
                 channelId?: string | undefined;
             } & Record<Exclude<keyof I["poll"]["messageRef"], keyof MessageRefDTO>, never>) | undefined;
+            roleCache?: ({
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
+            } & {
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
+            } & Record<Exclude<keyof I["poll"]["roleCache"], keyof CollectionDTO<string, RoleDTO>>, never>) | undefined;
             context?: ({
                 discord?: {
                     guildId?: string | undefined;
@@ -1108,6 +1283,26 @@ export declare const UpdatePollResponse: {
                 id?: string | undefined;
                 channelId?: string | undefined;
             } | undefined;
+            roleCache?: {
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
+            } | undefined;
             context?: ({
                 discord?: {
                     guildId?: string | undefined;
@@ -1176,6 +1371,26 @@ export declare const UpdatePollResponse: {
             messageRef?: {
                 id?: string | undefined;
                 channelId?: string | undefined;
+            } | undefined;
+            roleCache?: {
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
             } | undefined;
             context?: ({
                 discord?: {
@@ -1341,6 +1556,45 @@ export declare const UpdatePollResponse: {
                 id?: string | undefined;
                 channelId?: string | undefined;
             } & Record<Exclude<keyof I["poll"]["messageRef"], keyof MessageRefDTO>, never>) | undefined;
+            roleCache?: ({
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
+            } & {
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
+            } & Record<Exclude<keyof I["poll"]["roleCache"], keyof CollectionDTO<string, RoleDTO>>, never>) | undefined;
             context?: ({
                 discord?: {
                     guildId?: string | undefined;
@@ -1455,6 +1709,26 @@ export declare const DeletePollResponse: {
                 id?: string | undefined;
                 channelId?: string | undefined;
             } | undefined;
+            roleCache?: {
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
+            } | undefined;
             context?: ({
                 discord?: {
                     guildId?: string | undefined;
@@ -1523,6 +1797,26 @@ export declare const DeletePollResponse: {
             messageRef?: {
                 id?: string | undefined;
                 channelId?: string | undefined;
+            } | undefined;
+            roleCache?: {
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
             } | undefined;
             context?: ({
                 discord?: {
@@ -1688,6 +1982,45 @@ export declare const DeletePollResponse: {
                 id?: string | undefined;
                 channelId?: string | undefined;
             } & Record<Exclude<keyof I["poll"]["messageRef"], keyof MessageRefDTO>, never>) | undefined;
+            roleCache?: ({
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
+            } & {
+                find?: {
+                    <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                    (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                    <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                    <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+                } | undefined;
+                clear?: (() => void) | undefined;
+                delete?: ((key: string) => boolean) | undefined;
+                forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+                get?: ((key: string) => RoleDTO | undefined) | undefined;
+                has?: ((key: string) => boolean) | undefined;
+                set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+                readonly size?: number | undefined;
+                entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                keys?: (() => IterableIterator<string>) | undefined;
+                values?: (() => IterableIterator<RoleDTO>) | undefined;
+                [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+                readonly [Symbol.toStringTag]?: string | undefined;
+            } & Record<Exclude<keyof I["poll"]["roleCache"], keyof CollectionDTO<string, RoleDTO>>, never>) | undefined;
             context?: ({
                 discord?: {
                     guildId?: string | undefined;
@@ -2117,6 +2450,26 @@ export declare const PollDTO: {
             id?: string | undefined;
             channelId?: string | undefined;
         } | undefined;
+        roleCache?: {
+            find?: {
+                <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+            } | undefined;
+            clear?: (() => void) | undefined;
+            delete?: ((key: string) => boolean) | undefined;
+            forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+            get?: ((key: string) => RoleDTO | undefined) | undefined;
+            has?: ((key: string) => boolean) | undefined;
+            set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+            readonly size?: number | undefined;
+            entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+            keys?: (() => IterableIterator<string>) | undefined;
+            values?: (() => IterableIterator<RoleDTO>) | undefined;
+            [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+            readonly [Symbol.toStringTag]?: string | undefined;
+        } | undefined;
         context?: ({
             discord?: {
                 guildId?: string | undefined;
@@ -2281,6 +2634,45 @@ export declare const PollDTO: {
             id?: string | undefined;
             channelId?: string | undefined;
         } & Record<Exclude<keyof I["messageRef"], keyof MessageRefDTO>, never>) | undefined;
+        roleCache?: ({
+            find?: {
+                <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+            } | undefined;
+            clear?: (() => void) | undefined;
+            delete?: ((key: string) => boolean) | undefined;
+            forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+            get?: ((key: string) => RoleDTO | undefined) | undefined;
+            has?: ((key: string) => boolean) | undefined;
+            set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+            readonly size?: number | undefined;
+            entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+            keys?: (() => IterableIterator<string>) | undefined;
+            values?: (() => IterableIterator<RoleDTO>) | undefined;
+            [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+            readonly [Symbol.toStringTag]?: string | undefined;
+        } & {
+            find?: {
+                <V2 extends RoleDTO>(fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2): V2 | undefined;
+                (fn: (value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown): RoleDTO | undefined;
+                <This, V2_1 extends RoleDTO>(fn: (this: This, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => value is V2_1, thisArg: This): V2_1 | undefined;
+                <This_1>(fn: (this: This_1, value: RoleDTO, key: string, collection: CollectionDTO<string, RoleDTO>) => unknown, thisArg: This_1): RoleDTO | undefined;
+            } | undefined;
+            clear?: (() => void) | undefined;
+            delete?: ((key: string) => boolean) | undefined;
+            forEach?: ((callbackfn: (value: RoleDTO, key: string, map: Map<string, RoleDTO>) => void, thisArg?: any) => void) | undefined;
+            get?: ((key: string) => RoleDTO | undefined) | undefined;
+            has?: ((key: string) => boolean) | undefined;
+            set?: ((key: string, value: RoleDTO) => CollectionDTO<string, RoleDTO>) | undefined;
+            readonly size?: number | undefined;
+            entries?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+            keys?: (() => IterableIterator<string>) | undefined;
+            values?: (() => IterableIterator<RoleDTO>) | undefined;
+            [Symbol.iterator]?: (() => IterableIterator<[string, RoleDTO]>) | undefined;
+            readonly [Symbol.toStringTag]?: string | undefined;
+        } & Record<Exclude<keyof I["roleCache"], keyof CollectionDTO<string, RoleDTO>>, never>) | undefined;
         context?: ({
             discord?: {
                 guildId?: string | undefined;

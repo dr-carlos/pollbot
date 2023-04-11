@@ -31,29 +31,32 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv = __importStar(require("dotenv"));
+dotenv.config();
 const Discord = __importStar(require("discord.js"));
 const settings_1 = require("./settings");
 const commands = __importStar(require("./commands"));
 const Context_1 = require("./Context");
 const storage_1 = __importDefault(require("./storage"));
-const slashCommands_1 = require("./slashCommands");
+const slashCommands = __importStar(require("./slashCommands"));
 const client = new Discord.Client({
     intents: [
-        'DIRECT_MESSAGES',
-        'DIRECT_MESSAGE_REACTIONS',
-        'GUILDS',
-        'GUILD_MESSAGES',
-        'GUILD_MESSAGE_REACTIONS',
-    ]
+        "DIRECT_MESSAGES",
+        "DIRECT_MESSAGE_REACTIONS",
+        "GUILDS",
+        "GUILD_MEMBERS",
+        "GUILD_MESSAGES",
+        "GUILD_MESSAGE_REACTIONS",
+    ],
 });
 const context = new Context_1.Context(client);
 context.init();
-(0, slashCommands_1.registerCommands)();
-client.once('ready', () => __awaiter(void 0, void 0, void 0, function* () {
+slashCommands.registerCommands();
+client.once("ready", () => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
-    console.log(`Logged in as ${(_b = (_a = client.user) === null || _a === void 0 ? void 0 : _a.tag) !== null && _b !== void 0 ? _b : 'undefined'}`);
+    console.log(`Logged in as ${(_b = (_a = client.user) === null || _a === void 0 ? void 0 : _a.tag) !== null && _b !== void 0 ? _b : "undefined"}`);
 }));
-client.on('guildCreate', (guild) => __awaiter(void 0, void 0, void 0, function* () {
+client.on("guildCreate", (guild) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const guildData = yield storage_1.default.getGuildData(guild.id);
         if (guildData) {
@@ -65,15 +68,15 @@ client.on('guildCreate', (guild) => __awaiter(void 0, void 0, void 0, function* 
         });
     }
     catch (_c) {
-        console.error('There was an error on guildCreate');
+        console.error("There was an error on guildCreate");
     }
 }));
-client.on('guildDelete', (guild) => __awaiter(void 0, void 0, void 0, function* () {
+client.on("guildDelete", (guild) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield storage_1.default.deleteGuildData(guild.id);
     }
     catch (_d) {
-        console.error('There was an error on guildDelete');
+        console.error("There was an error on guildDelete");
     }
 }));
 function isCommand(message, command) {
@@ -84,14 +87,29 @@ function handleCommandInteraction(interaction) {
         const ctx = context.withCommandInteraction(interaction);
         try {
             switch (interaction.commandName) {
-                case 'poll':
-                    yield pollCommand(ctx);
+                case slashCommands.pollCreateCommand.name:
+                    yield pollCreate(ctx);
                     break;
-                case 'help':
+                case slashCommands.pollElectionCommand.name:
+                    yield pollElection(ctx);
+                    break;
+                case slashCommands.pollResultsCommand.name:
+                    yield pollResults(ctx);
+                    break;
+                case slashCommands.pollCloseCommand.name:
+                    yield pollClose(ctx);
+                    break;
+                case slashCommands.pollAuditCommand.name:
+                    yield pollAudit(ctx);
+                    break;
+                case slashCommands.pollUpdateCommand.name:
+                    yield pollUpdate(ctx);
+                    break;
+                case slashCommands.helpCommand.name:
                     yield helpCommand(ctx);
                     break;
-                case 'unsafe_delete_my_user_data':
-                    const user = interaction.options.getUser('confirm_user', true);
+                case slashCommands.deleteMyUserDataCommand.name:
+                    const user = interaction.options.getUser("confirm_user", true);
                     yield commands.deleteMyUserData(ctx, user);
                     break;
             }
@@ -102,9 +120,9 @@ function handleCommandInteraction(interaction) {
                     yield ctx.followUp({
                         embeds: [
                             new Discord.MessageEmbed({
-                                color: 'RED',
-                                description: 'I don\'t have access to successfully complete your command. Please make sure that I\'m invited to relevant channels and that my permissions are correct.',
-                            })
+                                color: "RED",
+                                description: "I don't have access to successfully complete your command. Please make sure that I'm invited to relevant channels and that my permissions are correct.",
+                            }),
                         ],
                         ephemeral: true,
                     });
@@ -115,9 +133,9 @@ function handleCommandInteraction(interaction) {
             const msg = {
                 embeds: [
                     new Discord.MessageEmbed({
-                        color: 'RED',
-                        description: 'There was an unknown error with your command. Sorry about that. Please reach out to [Pollbot support](https://discord.gg/uC2rkUyDdE) if there are further problems',
-                    })
+                        color: "RED",
+                        description: "There was an unknown error with your command. Sorry about that. Please reach out to @dr carlos#3430 if there are further problems",
+                    }),
                 ],
                 ephemeral: true,
             };
@@ -129,124 +147,235 @@ function handleButtonInteraction(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         const ctx = context.withButtonInteraction(interaction);
         switch (interaction.customId) {
-            case 'request_ballot':
+            case "request_ballot":
                 yield commands.createBallotFromButton(ctx);
                 break;
         }
     });
 }
-client.on('interactionCreate', (interaction) => __awaiter(void 0, void 0, void 0, function* () {
+client.on("interactionCreate", (interaction) => __awaiter(void 0, void 0, void 0, function* () {
     if (interaction.isCommand())
         return yield handleCommandInteraction(interaction);
     if (interaction.isButton())
         return yield handleButtonInteraction(interaction);
 }));
 function helpCommand(ctx) {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        const isPublic = (_a = ctx.interaction.options.getBoolean('public', false)) !== null && _a !== void 0 ? _a : false;
-        yield ctx.interaction.reply({
-            embeds: [commands.helpEmbed()],
-            ephemeral: !isPublic,
-        });
+        const isPublic = (_a = ctx.interaction.options.getBoolean("public", false)) !== null && _a !== void 0 ? _a : false;
+        const commandName = (_b = ctx.interaction.options.getString("command", false)) !== null && _b !== void 0 ? _b : undefined;
+        if (commandName) {
+            const command = slashCommands.matchCommand(commandName);
+            if (command) {
+                const embed = commands.commandHelp(command);
+                yield ctx.interaction.reply({
+                    embeds: [embed],
+                    ephemeral: !isPublic,
+                });
+            }
+            else {
+                yield ctx.interaction.reply({
+                    embeds: [
+                        new Discord.MessageEmbed({
+                            title: `Couldn\'t recognize the command \`${commandName}\``,
+                        }),
+                    ],
+                    ephemeral: true,
+                });
+            }
+        }
+        else {
+            yield ctx.interaction.reply({
+                embeds: [commands.helpEmbed()],
+                ephemeral: !isPublic,
+            });
+        }
     });
 }
-function pollCommand(ctx) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+function pollCreate(ctx) {
+    var _a, _b, _c, _d, _e, _f;
     return __awaiter(this, void 0, void 0, function* () {
         const interaction = ctx.interaction;
-        const subcommand = interaction.options.getSubcommand();
-        if (subcommand === 'create') {
-            const topic = interaction.options.getString('topic', true);
-            const optionsString = interaction.options.getString('options', true);
-            const randomizedBallots = (_a = interaction.options.getBoolean('randomized_ballots')) !== null && _a !== void 0 ? _a : true;
-            const anytimeResults = (_b = interaction.options.getBoolean('anytime_results')) !== null && _b !== void 0 ? _b : true;
-            if (((_c = interaction.channel) === null || _c === void 0 ? void 0 : _c.type) !== 'GUILD_TEXT')
-                return;
-            yield commands.createPoll(ctx, topic, optionsString, randomizedBallots, anytimeResults);
-        }
-        else if (subcommand === 'close') {
-            const pollId = interaction.options.getString('poll_id', true);
-            yield commands.closePoll(ctx, pollId);
-        }
-        else if (subcommand === 'results') {
-            const pollId = interaction.options.getString('poll_id', true);
-            const _private = (_d = interaction.options.getBoolean('private')) !== null && _d !== void 0 ? _d : false;
-            yield commands.pollResults(ctx, pollId, _private);
-        }
-        else if (subcommand === 'audit') {
-            const pollId = interaction.options.getString('poll_id', true);
-            yield commands.auditPoll(ctx, pollId);
-        }
-        else if (subcommand === 'update') {
-            const pollId = interaction.options.getString('poll_id', true);
-            const topic = (_e = interaction.options.getString('topic')) !== null && _e !== void 0 ? _e : undefined;
-            const closesAt = (_f = interaction.options.getString('closes_at')) !== null && _f !== void 0 ? _f : undefined;
-            const randomizedBallots = (_g = interaction.options.getBoolean('randomized_ballots')) !== null && _g !== void 0 ? _g : undefined;
-            const anytimeResults = (_h = interaction.options.getBoolean('anytime_results')) !== null && _h !== void 0 ? _h : true;
-            yield commands.updatePoll(ctx, pollId, topic, closesAt, randomizedBallots, anytimeResults);
-        }
+        const topic = interaction.options.getString("topic", true);
+        const optionsString = interaction.options.getString("options", true);
+        const randomizedBallots = (_a = interaction.options.getBoolean("randomized_ballots")) !== null && _a !== void 0 ? _a : true;
+        const anytimeResults = (_b = interaction.options.getBoolean("anytime_results")) !== null && _b !== void 0 ? _b : true;
+        const preferential = (_c = interaction.options.getBoolean("preferential")) !== null && _c !== void 0 ? _c : true;
+        const rankedPairs = (_d = interaction.options.getBoolean("ranked_pairs")) !== null && _d !== void 0 ? _d : false;
+        const forceAllPreferences = (_e = interaction.options.getBoolean("force_all_preferences")) !== null && _e !== void 0 ? _e : false;
+        if (((_f = interaction.channel) === null || _f === void 0 ? void 0 : _f.type) !== "GUILD_TEXT")
+            return;
+        yield commands.createPoll(ctx, topic, optionsString, randomizedBallots, anytimeResults, preferential, rankedPairs, false, forceAllPreferences);
     });
 }
-client.on('messageCreate', (message) => __awaiter(void 0, void 0, void 0, function* () {
+function pollElection(ctx) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const interaction = ctx.interaction;
+        const now = new Date(Date.now());
+        let month;
+        switch (now.getMonth()) {
+            case 0:
+                month = "January";
+                break;
+            case 1:
+                month = "February";
+                break;
+            case 2:
+                month = "March";
+                break;
+            case 3:
+                month = "April";
+                break;
+            case 4:
+                month = "May";
+                break;
+            case 5:
+                month = "June";
+                break;
+            case 6:
+                month = "July";
+                break;
+            case 7:
+                month = "August";
+                break;
+            case 8:
+                month = "September";
+                break;
+            case 9:
+                month = "October";
+                break;
+            case 10:
+                month = "November";
+                break;
+            case 11:
+                month = "December";
+                break;
+            default:
+                month = "January";
+        }
+        const topic = `Server Election --- ${now.getDate()} ${month} ${now.getFullYear()}`;
+        const optionsString = interaction.options.getString("candidates", true);
+        if (((_a = interaction.channel) === null || _a === void 0 ? void 0 : _a.type) !== "GUILD_TEXT")
+            return;
+        yield commands.createPoll(ctx, topic, optionsString, true, false, true, false, true, true);
+    });
+}
+function pollResults(ctx) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const interaction = ctx.interaction;
+        const pollId = interaction.options.getString("poll_id", true);
+        const _private = (_a = interaction.options.getBoolean("private")) !== null && _a !== void 0 ? _a : false;
+        yield commands.pollResults(ctx, pollId, _private);
+    });
+}
+function pollClose(ctx) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const pollId = ctx.interaction.options.getString("poll_id", true);
+        yield commands.closePoll(ctx, pollId);
+    });
+}
+function pollAudit(ctx) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const pollId = ctx.interaction.options.getString("poll_id", true);
+        yield commands.auditPoll(ctx, pollId);
+    });
+}
+function pollUpdate(ctx) {
+    var _a, _b, _c, _d, _e, _f;
+    return __awaiter(this, void 0, void 0, function* () {
+        const interaction = ctx.interaction;
+        const pollId = interaction.options.getString("poll_id", true);
+        const topic = (_a = interaction.options.getString("topic")) !== null && _a !== void 0 ? _a : undefined;
+        const closesAt = (_b = interaction.options.getString("closes_at")) !== null && _b !== void 0 ? _b : undefined;
+        const randomizedBallots = (_c = interaction.options.getBoolean("randomized_ballots")) !== null && _c !== void 0 ? _c : undefined;
+        const anytimeResults = (_d = interaction.options.getBoolean("anytime_results")) !== null && _d !== void 0 ? _d : true;
+        const preferential = (_e = interaction.options.getBoolean("preferential")) !== null && _e !== void 0 ? _e : true;
+        const rankedPairs = (_f = interaction.options.getBoolean("ranked_pairs")) !== null && _f !== void 0 ? _f : false;
+        yield commands.updatePoll(ctx, pollId, topic, closesAt, randomizedBallots, anytimeResults, preferential, rankedPairs);
+    });
+}
+client.on("messageCreate", (message) => __awaiter(void 0, void 0, void 0, function* () {
     var _e;
     try {
         const ctx = context.withMessage(message);
         if (message.author.id === ((_e = client.user) === null || _e === void 0 ? void 0 : _e.id))
             return;
-        if (message.channel.type === 'DM') {
+        if (message.channel.type === "DM") {
             yield commands.submitBallot(ctx, message);
             return;
         }
-        if (message.channel.type !== 'GUILD_TEXT')
+        if (message.channel.type !== "GUILD_TEXT")
             return;
         if (!isCommand(message, commands.POLLBOT_PREFIX)) {
             return;
         }
         if (isCommand(message, commands.CREATE_POLL_COMMAND)) {
-            yield ctx.replyOrEdit('This command is obsolete. Please use the slash command `/poll create`. If slash commands aren\'t available, have a server admin re-invite pollbot to your server.');
+            yield ctx.replyOrEdit("This command is obsolete. Please use the slash command `/poll create`. If slash commands aren't available, have a server admin re-invite pollbot to your server.");
             return;
         }
         if (isCommand(message, commands.CLOSE_POLL_COMMAND)) {
-            yield ctx.replyOrEdit('This command is obsolete. Please use the slash command `/poll close`. If slash commands aren\'t available, have a server admin re-invite pollbot to your server.');
+            yield ctx.replyOrEdit("This command is obsolete. Please use the slash command `/poll close`. If slash commands aren't available, have a server admin re-invite pollbot to your server.");
             return;
         }
         if (isCommand(message, commands.POLL_RESULTS_COMMAND)) {
-            yield ctx.replyOrEdit('This command is obsolete. Please use the slash command `/poll results`. If slash commands aren\'t available, have a server admin re-invite pollbot to your server.');
+            yield ctx.replyOrEdit("This command is obsolete. Please use the slash command `/poll results`. If slash commands aren't available, have a server admin re-invite pollbot to your server.");
             return;
         }
         if (isCommand(message, commands.AUDIT_POLL_COMMAND)) {
-            yield ctx.replyOrEdit('This command is obsolete. Please use the slash command `/poll audit`. If slash commands aren\'t available, have a server admin re-invite pollbot to your server.');
+            yield ctx.replyOrEdit("This command is obsolete. Please use the slash command `/poll audit`. If slash commands aren't available, have a server admin re-invite pollbot to your server.");
             return;
         }
         if (isCommand(message, commands.SET_POLL_PROPERTIES_COMMAND)) {
-            yield ctx.replyOrEdit('This command is obsolete. Please use the slash command `/poll update`. If slash commands aren\'t available, have a server admin re-invite pollbot to your server.');
+            yield ctx.replyOrEdit("This command is obsolete. Please use the slash command `/poll update`. If slash commands aren't available, have a server admin re-invite pollbot to your server.");
             return;
         }
         if (isCommand(message, commands.ADD_POLL_FEATURES_COMMAND)) {
-            yield ctx.replyOrEdit('This command is obsolete. Please use the slash command `/poll update`. If slash commands aren\'t available, have a server admin re-invite pollbot to your server.');
+            yield ctx.replyOrEdit("This command is obsolete. Please use the slash command `/poll update`. If slash commands aren't available, have a server admin re-invite pollbot to your server.");
             return;
         }
         if (isCommand(message, commands.REMOVE_POLL_FEATURES_COMMAND)) {
-            yield ctx.replyOrEdit('This command is obsolete. Please use the slash command `/poll update`. If slash commands aren\'t available, have a server admin re-invite pollbot to your server.');
+            yield ctx.replyOrEdit("This command is obsolete. Please use the slash command `/poll update`. If slash commands aren't available, have a server admin re-invite pollbot to your server.");
             return;
         }
         if (isCommand(message, commands.DELETE_MY_USER_DATA_COMMAND)) {
-            yield ctx.replyOrEdit('This command is obsolete. Please use the slash command `/delete_my_user_data`. If slash commands aren\'t available, have a server admin re-invite pollbot to your server.');
+            yield ctx.replyOrEdit("This command is obsolete. Please use the slash command `/delete_my_user_data`. If slash commands aren't available, have a server admin re-invite pollbot to your server.");
             return;
         }
         yield commands.help(ctx, message);
         return;
     }
     catch (e) {
+        if (e instanceof Discord.DiscordAPIError) {
+            if (e.code === 50001) {
+                yield message.channel.send({
+                    embeds: [
+                        new Discord.MessageEmbed({
+                            color: "RED",
+                            description: "I don't have access to successfully complete your command. Please make sure that I'm invited to relevant channels and that my permissions are correct.",
+                        }),
+                    ],
+                });
+                return;
+            }
+        }
         console.error(e);
-        yield message.channel.send('There was an unknown error with your command. Sorry about that.');
+        const msg = {
+            embeds: [
+                new Discord.MessageEmbed({
+                    color: "RED",
+                    description: "There was an unknown error with your command. Sorry about that. Please reach out to @dr carlos#3430 if there are further problems",
+                }),
+            ],
+        };
+        yield message.channel.send(msg);
     }
 }));
-client.on('raw', (packet) => __awaiter(void 0, void 0, void 0, function* () {
+client.on("raw", (packet) => __awaiter(void 0, void 0, void 0, function* () {
     var _f;
     try {
-        if (!['MESSAGE_REACTION_ADD'].includes(packet.t))
+        if (!["MESSAGE_REACTION_ADD"].includes(packet.t))
             return;
         if (!((_f = client.user) === null || _f === void 0 ? void 0 : _f.id)) {
             return;
@@ -255,7 +384,9 @@ client.on('raw', (packet) => __awaiter(void 0, void 0, void 0, function* () {
             return;
         }
         const cachedChannel = client.channels.cache.get(packet.d.channel_id);
-        const channel = (cachedChannel ? cachedChannel : (yield client.channels.fetch(packet.d.channel_id)));
+        const channel = (cachedChannel
+            ? cachedChannel
+            : yield client.channels.fetch(packet.d.channel_id));
         if (channel.messages.cache.has(packet.d.message_id))
             return;
         let message;
@@ -266,24 +397,28 @@ client.on('raw', (packet) => __awaiter(void 0, void 0, void 0, function* () {
             settings_1.L.d(e);
             return;
         }
-        const emoji = packet.d.emoji.id ? `${packet.d.emoji.name}:${packet.d.emoji.id}` : packet.d.emoji.name;
+        const emoji = packet.d.emoji.id
+            ? `${packet.d.emoji.name}:${packet.d.emoji.id}`
+            : packet.d.emoji.name;
         const reaction = message.reactions.resolve(emoji);
         if (!reaction)
             return;
         const cachedUser = client.users.cache.get(packet.d.user_id);
-        const user = cachedUser ? cachedUser : yield client.users.fetch(packet.d.user_id);
+        const user = cachedUser
+            ? cachedUser
+            : yield client.users.fetch(packet.d.user_id);
         reaction.users.cache.set(packet.d.user_id, user);
         reaction.message = message;
-        if (packet.t === 'MESSAGE_REACTION_ADD') {
-            client.emit('messageReactionAdd', reaction, user);
+        if (packet.t === "MESSAGE_REACTION_ADD") {
+            client.emit("messageReactionAdd", reaction, user);
         }
     }
     catch (e) {
-        settings_1.L.d('Error in raw reaction add');
+        settings_1.L.d("Error in raw reaction add");
         settings_1.L.d(e);
     }
 }));
-client.on('messageReactionAdd', (reaction, user) => __awaiter(void 0, void 0, void 0, function* () {
+client.on("messageReactionAdd", (reaction, user) => __awaiter(void 0, void 0, void 0, function* () {
     var _g, _h, _j, _k, _l, _m;
     const ctx = context.withMessageReaction(reaction, user);
     try {
@@ -300,16 +435,17 @@ client.on('messageReactionAdd', (reaction, user) => __awaiter(void 0, void 0, vo
             return;
         }
         settings_1.L.d((_k = reaction.message.embeds[0]) === null || _k === void 0 ? void 0 : _k.title);
-        if (((_m = (_l = reaction.message.embeds[0]) === null || _l === void 0 ? void 0 : _l.title) === null || _m === void 0 ? void 0 : _m.startsWith(commands.POLL_ID_PREFIX)) === true) {
-            settings_1.L.d('Creating ballot...');
-            yield commands.createBallot(ctx, reaction, user);
+        if (((_m = (_l = reaction.message.embeds[0]) === null || _l === void 0 ? void 0 : _l.title) === null || _m === void 0 ? void 0 : _m.startsWith(commands.POLL_ID_PREFIX)) ===
+            true) {
+            settings_1.L.d("Creating ballot...");
+            yield commands.createBallot(ctx, reaction.message, user);
             return;
         }
         settings_1.L.d(`Couldn't find poll from reaction: ${reaction.emoji} on message ${reaction.message.id}...`);
     }
     catch (_o) {
-        settings_1.L.d('There was an error on reaction');
+        settings_1.L.d("There was an error on reaction");
     }
 }));
 client.login(settings_1.DISCORD_TOKEN);
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi9zcmMvaW5kZXgudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsb0RBQXFDO0FBQ3JDLHlDQUE2QztBQUM3QyxxREFBc0M7QUFDdEMsdUNBQW1DO0FBQ25DLHdEQUErQjtBQUMvQixtREFBa0Q7QUFFbEQsTUFBTSxNQUFNLEdBQUcsSUFBSSxPQUFPLENBQUMsTUFBTSxDQUFDO0lBQzlCLE9BQU8sRUFBRTtRQUNMLGlCQUFpQjtRQUNqQiwwQkFBMEI7UUFDMUIsUUFBUTtRQUNSLGdCQUFnQjtRQUNoQix5QkFBeUI7S0FDNUI7Q0FDSixDQUFDLENBQUE7QUFDRixNQUFNLE9BQU8sR0FBRyxJQUFJLGlCQUFPLENBQUMsTUFBTSxDQUFDLENBQUE7QUFDbkMsT0FBTyxDQUFDLElBQUksRUFBRSxDQUFBO0FBRWQsSUFBQSxnQ0FBZ0IsR0FBRSxDQUFBO0FBRWxCLE1BQU0sQ0FBQyxJQUFJLENBQUMsT0FBTyxFQUFFLEdBQVMsRUFBRTs7SUFDNUIsT0FBTyxDQUFDLEdBQUcsQ0FBQyxnQkFBZ0IsTUFBQSxNQUFBLE1BQU0sQ0FBQyxJQUFJLDBDQUFFLEdBQUcsbUNBQUksV0FBVyxFQUFFLENBQUMsQ0FBQTtBQUNsRSxDQUFDLENBQUEsQ0FBQyxDQUFBO0FBRUYsTUFBTSxDQUFDLEVBQUUsQ0FBQyxhQUFhLEVBQUUsQ0FBTSxLQUFLLEVBQUMsRUFBRTtJQUNuQyxJQUFJO1FBQ0EsTUFBTSxTQUFTLEdBQUcsTUFBTSxpQkFBTyxDQUFDLFlBQVksQ0FBQyxLQUFLLENBQUMsRUFBRSxDQUFDLENBQUE7UUFDdEQsSUFBSSxTQUFTLEVBQUU7WUFDWCxPQUFNO1NBQ1Q7UUFDRCxNQUFNLGlCQUFPLENBQUMsZUFBZSxDQUFDO1lBQzFCLEVBQUUsRUFBRSxLQUFLLENBQUMsRUFBRTtZQUNaLE1BQU0sRUFBRSxFQUFFO1NBQ2IsQ0FBQyxDQUFB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
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi9zcmMvaW5kZXgudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsK0NBQWlDO0FBQ2pDLE1BQU0sQ0FBQyxNQUFNLEVBQUUsQ0FBQztBQUVoQixvREFBc0M7QUFDdEMseUNBQThDO0FBQzlDLHFEQUF1QztBQUN2Qyx1Q0FBNEQ7QUFDNUQsd0RBQWdDO0FBQ2hDLCtEQUFpRDtBQUdqRCxNQUFNLE1BQU0sR0FBRyxJQUFJLE9BQU8sQ0FBQyxNQUFNLENBQUM7SUFDaEMsT0FBTyxFQUFFO1FBQ1AsaUJBQWlCO1FBQ2pCLDBCQUEwQjtRQUMxQixRQUFRO1FBQ1IsZUFBZTtRQUNmLGdCQUFnQjtRQUNoQix5QkFBeUI7S0FDMUI7Q0FDRixDQUFDLENBQUM7QUFDSCxNQUFNLE9BQU8sR0FBRyxJQUFJLGlCQUFPLENBQUMsTUFBTSxDQUFDLENBQUM7QUFDcEMsT0FBTyxDQUFDLElBQUksRUFBRSxDQUFDO0FBRWYsYUFBYSxDQUFDLGdCQUFnQixFQUFFLENBQUM7QUFFakMsTUFBTSxDQUFDLElBQUksQ0FBQyxPQUFPLEVBQUUsR0FBUyxFQUFFOztJQUM5QixPQUFPLENBQUMsR0FBRyxDQUFDLGdCQUFnQixNQUFBLE1BQUEsTUFBTSxDQUFDLElBQUksMENBQUUsR0FBRyxtQ0FBSSxXQUFXLEVBQUUsQ0FBQyxDQUFDO0FBQ2pFLENBQUMsQ0FBQSxDQUFDLENBQUM7QUFFSCxNQUFNLENBQUMsRUFBRSxDQUFDLGFBQWEsRUFBRSxDQUFPLEtBQUssRUFBRSxFQUFFO0lBQ3ZDLElBQUk7UUFDRixNQUFNLFNBQVMsR0FBRyxNQUFNLGlCQUFPLENBQUMsWUFBWSxDQUFDLEtBQUssQ0FBQyxFQUFFLENBQUMsQ0FBQztRQUN2RCxJQUFJLFNBQVMsRUFBRTtZQUNiLE9BQU87U0FDUjtRQUNELE1BQU0saUJBQU8sQ0FBQyxlQUFlLENBQUM7WUFDNUIs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
