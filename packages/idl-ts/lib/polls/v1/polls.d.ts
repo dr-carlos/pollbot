@@ -165,7 +165,7 @@ export interface WebPollContextDTO {
 }
 export declare const ReadPollRequest: {
     encode(message: ReadPollRequest, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): ReadPollRequest;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): ReadPollRequest;
     fromJSON(object: any): ReadPollRequest;
     toJSON(message: ReadPollRequest): unknown;
     fromPartial<I extends {
@@ -176,7 +176,7 @@ export declare const ReadPollRequest: {
 };
 export declare const ReadPollResponse: {
     encode(message: ReadPollResponse, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): ReadPollResponse;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): ReadPollResponse;
     fromJSON(object: any): ReadPollResponse;
     toJSON(message: ReadPollResponse): unknown;
     fromPartial<I extends {
@@ -591,7 +591,7 @@ export declare const ReadPollResponse: {
 };
 export declare const CreatePollRequest: {
     encode(message: CreatePollRequest, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): CreatePollRequest;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): CreatePollRequest;
     fromJSON(object: any): CreatePollRequest;
     toJSON(message: CreatePollRequest): unknown;
     fromPartial<I extends {
@@ -703,7 +703,7 @@ export declare const CreatePollRequest: {
 };
 export declare const CreatePollResponse: {
     encode(message: CreatePollResponse, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): CreatePollResponse;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): CreatePollResponse;
     fromJSON(object: any): CreatePollResponse;
     toJSON(message: CreatePollResponse): unknown;
     fromPartial<I extends {
@@ -1118,7 +1118,7 @@ export declare const CreatePollResponse: {
 };
 export declare const UpdatePollRequest: {
     encode(message: UpdatePollRequest, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): UpdatePollRequest;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): UpdatePollRequest;
     fromJSON(object: any): UpdatePollRequest;
     toJSON(message: UpdatePollRequest): unknown;
     fromPartial<I extends {
@@ -1230,7 +1230,7 @@ export declare const UpdatePollRequest: {
 };
 export declare const UpdatePollResponse: {
     encode(message: UpdatePollResponse, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): UpdatePollResponse;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): UpdatePollResponse;
     fromJSON(object: any): UpdatePollResponse;
     toJSON(message: UpdatePollResponse): unknown;
     fromPartial<I extends {
@@ -1645,7 +1645,7 @@ export declare const UpdatePollResponse: {
 };
 export declare const DeletePollRequest: {
     encode(message: DeletePollRequest, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): DeletePollRequest;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): DeletePollRequest;
     fromJSON(object: any): DeletePollRequest;
     toJSON(message: DeletePollRequest): unknown;
     fromPartial<I extends {
@@ -1656,7 +1656,7 @@ export declare const DeletePollRequest: {
 };
 export declare const DeletePollResponse: {
     encode(message: DeletePollResponse, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): DeletePollResponse;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): DeletePollResponse;
     fromJSON(object: any): DeletePollResponse;
     toJSON(message: DeletePollResponse): unknown;
     fromPartial<I extends {
@@ -2071,7 +2071,7 @@ export declare const DeletePollResponse: {
 };
 export declare const VoteDTO: {
     encode(message: VoteDTO, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): VoteDTO;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): VoteDTO;
     fromJSON(object: any): VoteDTO;
     toJSON(message: VoteDTO): unknown;
     fromPartial<I extends {
@@ -2084,7 +2084,7 @@ export declare const VoteDTO: {
 };
 export declare const BallotRequestDTO: {
     encode(message: BallotRequestDTO, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): BallotRequestDTO;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): BallotRequestDTO;
     fromJSON(object: any): BallotRequestDTO;
     toJSON(message: BallotRequestDTO): unknown;
     fromPartial<I extends {
@@ -2143,7 +2143,7 @@ export declare const BallotRequestDTO: {
 };
 export declare const BallotDTO: {
     encode(message: BallotDTO, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): BallotDTO;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): BallotDTO;
     fromJSON(object: any): BallotDTO;
     toJSON(message: BallotDTO): unknown;
     fromPartial<I extends {
@@ -2240,7 +2240,7 @@ export declare const BallotDTO: {
 };
 export declare const BallotDTO_VotesEntry: {
     encode(message: BallotDTO_VotesEntry, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): BallotDTO_VotesEntry;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): BallotDTO_VotesEntry;
     fromJSON(object: any): BallotDTO_VotesEntry;
     toJSON(message: BallotDTO_VotesEntry): unknown;
     fromPartial<I extends {
@@ -2262,7 +2262,7 @@ export declare const BallotDTO_VotesEntry: {
 };
 export declare const BallotDTO_BallotOptionMappingEntry: {
     encode(message: BallotDTO_BallotOptionMappingEntry, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): BallotDTO_BallotOptionMappingEntry;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): BallotDTO_BallotOptionMappingEntry;
     fromJSON(object: any): BallotDTO_BallotOptionMappingEntry;
     toJSON(message: BallotDTO_BallotOptionMappingEntry): unknown;
     fromPartial<I extends {
@@ -2275,7 +2275,7 @@ export declare const BallotDTO_BallotOptionMappingEntry: {
 };
 export declare const DiscordBallotContextDTO: {
     encode(message: DiscordBallotContextDTO, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): DiscordBallotContextDTO;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): DiscordBallotContextDTO;
     fromJSON(object: any): DiscordBallotContextDTO;
     toJSON(message: DiscordBallotContextDTO): unknown;
     fromPartial<I extends {
@@ -2288,7 +2288,7 @@ export declare const DiscordBallotContextDTO: {
 };
 export declare const WebBallotContextDTO: {
     encode(message: WebBallotContextDTO, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): WebBallotContextDTO;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): WebBallotContextDTO;
     fromJSON(object: any): WebBallotContextDTO;
     toJSON(message: WebBallotContextDTO): unknown;
     fromPartial<I extends {
@@ -2301,7 +2301,7 @@ export declare const WebBallotContextDTO: {
 };
 export declare const PollRequestDTO: {
     encode(message: PollRequestDTO, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): PollRequestDTO;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): PollRequestDTO;
     fromJSON(object: any): PollRequestDTO;
     toJSON(message: PollRequestDTO): unknown;
     fromPartial<I extends {
@@ -2385,7 +2385,7 @@ export declare const PollRequestDTO: {
 };
 export declare const PollRequestDTO_OptionsEntry: {
     encode(message: PollRequestDTO_OptionsEntry, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): PollRequestDTO_OptionsEntry;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): PollRequestDTO_OptionsEntry;
     fromJSON(object: any): PollRequestDTO_OptionsEntry;
     toJSON(message: PollRequestDTO_OptionsEntry): unknown;
     fromPartial<I extends {
@@ -2398,7 +2398,7 @@ export declare const PollRequestDTO_OptionsEntry: {
 };
 export declare const PollDTO: {
     encode(message: PollDTO, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): PollDTO;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): PollDTO;
     fromJSON(object: any): PollDTO;
     toJSON(message: PollDTO): unknown;
     fromPartial<I extends {
@@ -2722,7 +2722,7 @@ export declare const PollDTO: {
 };
 export declare const PollDTO_OptionsEntry: {
     encode(message: PollDTO_OptionsEntry, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): PollDTO_OptionsEntry;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): PollDTO_OptionsEntry;
     fromJSON(object: any): PollDTO_OptionsEntry;
     toJSON(message: PollDTO_OptionsEntry): unknown;
     fromPartial<I extends {
@@ -2735,7 +2735,7 @@ export declare const PollDTO_OptionsEntry: {
 };
 export declare const PollDTO_BallotsEntry: {
     encode(message: PollDTO_BallotsEntry, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): PollDTO_BallotsEntry;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): PollDTO_BallotsEntry;
     fromJSON(object: any): PollDTO_BallotsEntry;
     toJSON(message: PollDTO_BallotsEntry): unknown;
     fromPartial<I extends {
@@ -2869,7 +2869,7 @@ export declare const PollDTO_BallotsEntry: {
 };
 export declare const PollMetricsDTO: {
     encode(message: PollMetricsDTO, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): PollMetricsDTO;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): PollMetricsDTO;
     fromJSON(object: any): PollMetricsDTO;
     toJSON(message: PollMetricsDTO): unknown;
     fromPartial<I extends {
@@ -2882,7 +2882,7 @@ export declare const PollMetricsDTO: {
 };
 export declare const DiscordPollContextDTO: {
     encode(message: DiscordPollContextDTO, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): DiscordPollContextDTO;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): DiscordPollContextDTO;
     fromJSON(object: any): DiscordPollContextDTO;
     toJSON(message: DiscordPollContextDTO): unknown;
     fromPartial<I extends {
@@ -2906,7 +2906,7 @@ export declare const DiscordPollContextDTO: {
 };
 export declare const WebPollContextDTO: {
     encode(message: WebPollContextDTO, writer?: _m0.Writer): _m0.Writer;
-    decode(input: _m0.Reader | Uint8Array, length?: number): WebPollContextDTO;
+    decode(input: _m0.Reader | Uint8Array, length?: number | undefined): WebPollContextDTO;
     fromJSON(object: any): WebPollContextDTO;
     toJSON(message: WebPollContextDTO): unknown;
     fromPartial<I extends {
@@ -2932,8 +2932,8 @@ export declare class PollsServiceClientImpl implements PollsService {
 interface Rpc {
     request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;
 }
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
-export type DeepPartial<T> = T extends Builtin ? T : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>> : T extends {
+declare type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+export declare type DeepPartial<T> = T extends Builtin ? T : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>> : T extends {
     $case: string;
 } ? {
     [K in keyof Omit<T, "$case">]?: DeepPartial<T[K]>;
@@ -2942,8 +2942,8 @@ export type DeepPartial<T> = T extends Builtin ? T : T extends Array<infer U> ? 
 } : T extends {} ? {
     [K in keyof T]?: DeepPartial<T[K]>;
 } : Partial<T>;
-type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P : P & {
+declare type KeysOfUnion<T> = T extends T ? keyof T : never;
+export declare type Exact<P, I extends P> = P extends Builtin ? P : P & {
     [K in keyof P]: Exact<P[K], I[K]>;
 } & Record<Exclude<keyof I, KeysOfUnion<P>>, never>;
 export {};
