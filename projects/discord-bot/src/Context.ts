@@ -1,8 +1,8 @@
-import { ButtonInteraction, CacheType, Client, ClientApplication, CommandInteraction, Guild, GuildMember, InteractionDeferReplyOptions, InteractionReplyOptions, Message, MessageEmbed, MessageOptions, MessagePayload, MessageReaction, PartialUser, Role, Team, TeamMember, TextBasedChannel, TextChannel, User, WebhookMessageOptions } from 'discord.js'
+import { BaseMessageComponent, BufferResolvable, ButtonInteraction, CacheType, Client, ClientApplication, CommandInteraction, FileOptions, Guild, GuildMember, InteractionDeferReplyOptions, InteractionReplyOptions, Message, MessageActionRow, MessageEmbed, MessageMentionOptions, MessageOptions, MessagePayload, MessageReaction, PartialUser, Role, Team, TeamMember, TextBasedChannel, TextChannel, User, WebhookMessageOptions, MessageAttachment, MessageActionRowOptions, MessageEditOptions } from 'discord.js'
 import { Poll } from './models'
 import { delay } from '@qntnt/ts-utils/lib/promise'
 import { isTeam, PollbotPermission, isGuildMember } from './commands'
-import { APIMessage } from 'discord-api-types'
+import { APIMessage, APIEmbed } from 'discord-api-types/v9'
 import { L } from './settings'
 import { SlashCommandBuilder } from "@discordjs/builders"
 
@@ -153,7 +153,7 @@ export class Context<I extends Interaction | undefined = Interaction | undefined
 
     async defer(options?: InteractionDeferReplyOptions): Promise<Context<I, Message>> {
         if (this.isCommandInteraction()) {
-            const _msg = await this.interaction.deferReply({ ...options, fetchReply: true })
+            const _msg: Message | APIMessage = await this.interaction.deferReply({ ...options, fetchReply: true })
             const msg = await this.resolveMessage(_msg)
             return this.withReply(msg)
         }
@@ -265,7 +265,7 @@ export class Context<I extends Interaction | undefined = Interaction | undefined
         return this._botOwner
     }
 
-    private messagePayload(response: string | InteractionReplyOptions): InteractionReplyOptions {
+    private messagePayload(response: string | InteractionReplyOptions | MessageOptions): MessageOptions {
         let payload: MessageOptions = {}
         if (typeof (response) === 'string') {
             payload = {
@@ -276,7 +276,7 @@ export class Context<I extends Interaction | undefined = Interaction | undefined
                 ]
             }
         } else {
-            payload = response
+            payload = response as MessageOptions
         }
         return payload
     }
@@ -299,7 +299,7 @@ export class Context<I extends Interaction | undefined = Interaction | undefined
             const msg = await this.interaction.followUp({
                 ...payload,
                 fetchReply: true,
-            })
+            } as InteractionReplyOptions)
             return await this.resolveMessage(msg)
         }
         if (this.isMessage()) {
@@ -331,7 +331,7 @@ export class Context<I extends Interaction | undefined = Interaction | undefined
         }
         if (this.isMessage()) {
             if (this.replied()) {
-                const msg = await (this as Context<Message, Message>)._replyMessage.edit(payload)
+                const msg = await (this as Context<Message, Message>)._replyMessage.edit(payload as MessageEditOptions)
                 this._replyMessage = msg as M & Message
                 return msg
             }
@@ -339,7 +339,7 @@ export class Context<I extends Interaction | undefined = Interaction | undefined
         }
         if (this.isMessageReaction()) {
             if (this.replied()) {
-                const msg = await (this as Context<MessageReaction, Message>)._replyMessage.edit(payload)
+                const msg = await (this as Context<MessageReaction, Message>)._replyMessage.edit(payload as MessageEditOptions)
                 this._replyMessage = msg as M & Message
                 return msg
             }
@@ -350,7 +350,7 @@ export class Context<I extends Interaction | undefined = Interaction | undefined
 
     public async replyOrEdit(response: string | InteractionReplyOptions): Promise<Message> {
         if (!this.hasInteraction()) throw new Error('Cannot reply with no interaction')
-        const payload: MessageOptions = this.messagePayload(response)
+        const payload: InteractionReplyOptions = this.messagePayload(response) as InteractionReplyOptions
         if (this.isCommandInteraction()) {
             let msg: Message | APIMessage
             if (!this.interaction.replied) {
@@ -370,22 +370,22 @@ export class Context<I extends Interaction | undefined = Interaction | undefined
         }
         if (this.isMessage()) {
             if (this.replied()) {
-                const msg = await this._replyMessage.edit(payload)
+                const msg = await this._replyMessage.edit(payload as MessageEditOptions)
                 this._replyMessage = msg as M & Message
                 return msg
             } else {
-                const msg = await this.interaction.channel.send(payload)
+                const msg = await this.interaction.channel.send(payload as MessageOptions)
                 this._replyMessage = msg as M
                 return msg
             }
         }
         if (this.isMessageReaction()) {
             if (this.replied()) {
-                const msg = await this._replyMessage.edit(payload)
+                const msg = await this._replyMessage.edit(payload as MessageEditOptions)
                 this._replyMessage = msg as M & Message
                 return msg
             } else {
-                const msg = await this.interaction.message.channel.send(payload)
+                const msg = await this.interaction.message.channel.send(payload as MessageOptions)
                 this._replyMessage = msg as M
                 return msg
             }
@@ -416,7 +416,7 @@ export class Context<I extends Interaction | undefined = Interaction | undefined
         return this._type === 'MessageReaction'
     }
 
-    public async resolveMessage(msg: APIMessage | Message): Promise<Message> {
+    public async resolveMessage(msg: Message | APIMessage): Promise<Message> {
         if (isMessage(msg)) {
             return msg
         } else {

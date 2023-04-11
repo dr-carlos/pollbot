@@ -1,6 +1,9 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
-import { Routes } from "discord-api-types/v9";
+import {
+  Routes,
+  APIApplicationCommandOptionChoice,
+} from "discord-api-types/v9";
 import { DISCORD_CLIENT_ID, DISCORD_TOKEN } from "./settings";
 
 export const pollCreateCommand = new SlashCommandBuilder()
@@ -202,8 +205,12 @@ export const helpCommand = new SlashCommandBuilder()
       .setDescription("Prints detailed help information for a command")
       .setRequired(false)
       .setChoices(
-        nonHelpCommands.map(
-          (c) => [c.name, c.name] as [name: string, value: string]
+        ...nonHelpCommands.map(
+          (c) =>
+            Object({
+              name: c.name,
+              value: c.name,
+            }) as APIApplicationCommandOptionChoice<string>
         )
       )
   );

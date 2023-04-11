@@ -49,7 +49,7 @@ import {
   pollResultsCommand,
   pollUpdateCommand,
 } from "./slashCommands";
-import { APIApplicationCommandOption } from "discord-api-types";
+import { APIApplicationCommandOption } from "discord-api-types/v9";
 
 export const POLLBOT_PREFIX = PREFIX;
 export const CREATE_POLL_COMMAND = `${POLLBOT_PREFIX} poll`;
