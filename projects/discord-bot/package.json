@@ -7,14 +7,14 @@
   "author": "Quentin <quentopp@gmail.com>",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@types/jest": "26.0.20",
+    "@types/jest": "29.5.0",
     "@types/seedrandom": "3.0.1",
     "@typescript-eslint/eslint-plugin": "4.13.0",
     "@typescript-eslint/parser": "4.13.0",
     "dotenv": "16.0.3",
     "eslint": "7.17.0",
-    "jest": "26.6.3",
-    "ts-jest": "26.4.4",
+    "jest": "29.5.0",
+    "ts-jest": "29.1.0",
     "ts-node-dev": "1.1.8",
     "typescript": "4.5"
   },
@@ -28,8 +28,8 @@
     "start": "node build/index.js"
   },
   "dependencies": {
-    "@discordjs/rest": "0.3.0",
     "@discordjs/builders": "1.6.1",
+    "@discordjs/rest": "1.7.0",
     "@discordjs/util": "0.2.0",
     "@qntnt/ts-utils": "1.0.0",
     "@tsconfig/recommended": "1.0.1",
@@ -41,8 +41,8 @@
     "discord-api-types": "0.33.5",
     "discord.js": "13.15.1",
     "dotenv": "16.0.3",
-    "firebase": "8.2.2",
-    "firebase-admin": "9.4.2",
+    "firebase": "9.19.1",
+    "firebase-admin": "11.6.0",
     "idl": "link:../../packages/idl-ts",
     "luxon": "1.25.0",
     "moment": "2.29.1",
