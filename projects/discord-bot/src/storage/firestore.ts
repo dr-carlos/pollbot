@@ -50,7 +50,12 @@ export class FirestoreStorage implements Storage {
       ...(PollConfig.toJSON(pollConfig) as any),
       id: pollId,
       createdAt: now.toDate(),
-      closesAt: now.add(3, "days").toDate(),
+      closesAt: now
+        .add(
+          pollConfig.features.includes(PollFeature.ELECTION_POLL) ? 3 : 7,
+          "days"
+        )
+        .toDate(),
       ballots: {},
     });
     poll.features = poll.features.filter(
