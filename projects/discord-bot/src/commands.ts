@@ -3,6 +3,9 @@ import {
   Collection,
   CommandInteraction,
   DiscordAPIError,
+  GuildBasedChannel,
+  GuildChannel,
+  GuildChannelManager,
   GuildMember,
   Message,
   MessageActionRow,
@@ -14,6 +17,7 @@ import {
   PartialUser,
   Snowflake,
   Team,
+  ThreadChannel,
   ThreadMember,
   ThreadMemberManager,
   User,
@@ -212,11 +216,13 @@ async function createPollEmbed(
     message != null &&
     !poll.features.includes(PollFeature.SENT_ELECTION_DMS)
   ) {
-    const channel = await ctx.guild?.channels.fetch(message.channelId);
+    const channel: GuildBasedChannel | null | undefined =
+      await ctx.guild?.channels.fetch(message.channelId);
     const rawMembers:
-      | Collection<string, GuildMember>
+      | Collection<Snowflake, GuildMember>
       | ThreadMemberManager
       | undefined = channel?.members;
+    // console.log(rawMembers);
 
     if (rawMembers != null) {
       let newMembers: null | Collection<Snowflake, GuildMember> = null;
@@ -285,7 +291,7 @@ async function createPollEmbed(
           createBallot(ctx, message, user, false);
       } else
         for (const member of members)
-          if (!member[1].user?.bot)
+          if (!member[1].user.bot)
             createBallot(ctx, message, member[1].user, false);
 
       poll.features.push(PollFeature.SENT_ELECTION_DMS);
@@ -302,9 +308,9 @@ async function createPollEmbed(
     .join(", ");
   let footerText = `This poll closes at ${closesAt}`;
 
-  if (metrics && message?.editable)
-    footerText += `\nBallots: ${metrics.ballotsSubmitted} submitted / ${
-      metrics.ballotsRequested
+  if ((metrics || election) && message?.editable)
+    footerText += `\nBallots: ${metrics ? metrics.ballotsSubmitted : 0} submitted / ${
+      metrics ? metrics.ballotsRequested : 0
     } ${election ? "sent" : "requested"}`;
 
   L.d(footerText);
