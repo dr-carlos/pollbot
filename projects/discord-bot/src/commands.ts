@@ -4,6 +4,8 @@ import {
   CommandInteraction,
   DiscordAPIError,
   GuildBasedChannel,
+  GuildChannel,
+  GuildChannelManager,
   GuildMember,
   Message,
   MessageActionRow,
@@ -15,6 +17,7 @@ import {
   PartialUser,
   Snowflake,
   Team,
+  ThreadChannel,
   ThreadMember,
   ThreadMemberManager,
   User,
@@ -730,16 +733,6 @@ function findPollId(message: Message | PartialMessage): string | undefined {
   return pollId;
 }
 
-function getNickname(message: Message | PartialMessage): string | undefined {
-  return (
-    (message.member
-      ? message.member.nickname
-        ? message.member.nickname
-        : message.member.user.username
-      : message.author?.username) ?? undefined
-  );
-}
-
 export async function createBallotFromButton(ctx: Context<ButtonInteraction>) {
   const user = ctx.interaction.user;
   const message = await ctx.resolveMessage(ctx.interaction.message);
@@ -780,18 +773,16 @@ export async function createBallotFromButton(ctx: Context<ButtonInteraction>) {
         ),
       );
 
-    const nickname = getNickname(message);
-    if (nickname)
-      ballot = await storage.createBallot(poll, {
-        pollId: poll.id,
-        context: {
-          $case: "discord",
-          discord: {
-            userId: user.id,
-            userName: nickname,
-          },
+    ballot = await storage.createBallot(poll, {
+      pollId: poll.id,
+      context: {
+        $case: "discord",
+        discord: {
+          userId: user.id,
+          userName: user.username,
         },
-      });
+      },
+    });
   } else {
     for (const o in ballot.votes) {
       ballot.votes[o].rank = undefined;
@@ -806,15 +797,13 @@ export async function createBallotFromButton(ctx: Context<ButtonInteraction>) {
   }
 
   if (ballot.context === undefined) {
-    const nickname = getNickname(message);
-    if (nickname)
-      ballot.context = {
-        $case: "discord",
-        discord: {
-          userId: user.id,
-          userName: nickname,
-        },
-      };
+    ballot.context = {
+      $case: "discord",
+      discord: {
+        userId: user.id,
+        userName: user.username,
+      },
+    };
     await storage.updateBallot(ballot.id, ballot);
   }
 
@@ -923,7 +912,7 @@ export async function createBallot(
         $case: "discord",
         discord: {
           userId: user.id,
-          userName: getNickname(message) ?? "",
+          userName: user.username ?? "",
         },
       },
     });
@@ -940,13 +929,12 @@ export async function createBallot(
     );
   }
 
-  const nickname = getNickname(message);
-  if (ballot.context === undefined && nickname != null) {
+  if (ballot.context === undefined) {
     ballot.context = {
       $case: "discord",
       discord: {
         userId: user.id,
-        userName: nickname,
+        userName: user.username ?? "",
       },
     };
     await storage.updateBallot(ballot.id, ballot);
