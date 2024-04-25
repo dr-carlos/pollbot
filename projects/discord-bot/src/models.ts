@@ -33,12 +33,14 @@ export const POLL_FEATURES_MAPPER = {
   RANKED_PAIRS: PollFeatureDTO.RANKED_PAIRS,
   ELECTION_POLL: PollFeatureDTO.ELECTION_POLL,
   FORCE_ALL_PREFERENCES: PollFeatureDTO.FORCE_ALL_PREFERENCES,
+  PACPS: PollFeatureDTO.PACPS,
+  CLOSE_ON_MAJORITY: PollFeatureDTO.CLOSE_ON_MAJORITY,
 };
 type RecordKey = string | number | symbol;
 type Reverse<
   R extends Record<K, V>,
   K extends RecordKey = RecordKey,
-  V extends RecordKey = RecordKey
+  V extends RecordKey = RecordKey,
 > = {
   [V in R[keyof R]]: keyof R;
 };
@@ -52,10 +54,13 @@ export const POLL_FEATURES_REVERSE_MAPPER: Reverse<
 > = {
   ...keys(POLL_FEATURES_MAPPER)
     .map((k) => ({ k, v: POLL_FEATURES_MAPPER[k] }))
-    .reduce((prev, current) => {
-      prev[current.v] = current.k;
-      return prev;
-    }, {} as Reverse<typeof POLL_FEATURES_MAPPER>),
+    .reduce(
+      (prev, current) => {
+        prev[current.v] = current.k;
+        return prev;
+      },
+      {} as Reverse<typeof POLL_FEATURES_MAPPER>,
+    ),
 };
 
 export interface UserDataMetrics {

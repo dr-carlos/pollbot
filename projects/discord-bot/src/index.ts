@@ -56,7 +56,7 @@ function isCommand(message: Discord.Message, command: string): boolean {
 }
 
 async function handleCommandInteraction(
-  interaction: Discord.CommandInteraction
+  interaction: Discord.CommandInteraction,
 ) {
   const ctx = context.withCommandInteraction(interaction);
   try {
@@ -175,6 +175,9 @@ async function pollCreate(ctx: Context<Discord.CommandInteraction>) {
   const rankedPairs = interaction.options.getBoolean("ranked_pairs") ?? false;
   const forceAllPreferences =
     interaction.options.getBoolean("force_all_preferences") ?? false;
+  const majorityClose =
+    interaction.options.getBoolean("close_on_majority") ?? false;
+
   if (interaction.channel?.type !== "GUILD_TEXT") return;
   await commands.createPoll(
     ctx,
@@ -185,7 +188,9 @@ async function pollCreate(ctx: Context<Discord.CommandInteraction>) {
     preferential,
     rankedPairs,
     false,
-    forceAllPreferences
+    forceAllPreferences,
+    false,
+    majorityClose,
   );
 }
 
@@ -238,6 +243,7 @@ async function pollElection(ctx: Context<Discord.CommandInteraction>) {
   const topic = `Server Election --- ${now.getDate()} ${month} ${now.getFullYear()}`;
 
   const optionsString = interaction.options.getString("candidates", true);
+  const pacps = interaction.options.getBoolean("pacps") ?? false;
 
   if (interaction.channel?.type !== "GUILD_TEXT") return;
 
@@ -250,7 +256,9 @@ async function pollElection(ctx: Context<Discord.CommandInteraction>) {
     true,
     false,
     true,
-    true
+    true,
+    pacps,
+    false,
   );
 }
 
@@ -282,6 +290,9 @@ async function pollUpdate(ctx: Context<Discord.CommandInteraction>) {
     interaction.options.getBoolean("anytime_results") ?? true;
   const preferential = interaction.options.getBoolean("preferential") ?? true;
   const rankedPairs = interaction.options.getBoolean("ranked_pairs") ?? false;
+  const majorityClose =
+    interaction.options.getBoolean("close_on_majority") ?? false;
+
   await commands.updatePoll(
     ctx,
     pollId,
@@ -290,7 +301,8 @@ async function pollUpdate(ctx: Context<Discord.CommandInteraction>) {
     randomizedBallots,
     anytimeResults,
     preferential,
-    rankedPairs
+    rankedPairs,
+    majorityClose,
   );
 }
 
@@ -313,49 +325,49 @@ client.on("messageCreate", async (message) => {
     }
     if (isCommand(message, commands.CREATE_POLL_COMMAND)) {
       await ctx.replyOrEdit(
-        "This command is obsolete. Please use the slash command `/poll create`. If slash commands aren't available, have a server admin re-invite pollbot to your server."
+        "This command is obsolete. Please use the slash command `/poll create`. If slash commands aren't available, have a server admin re-invite pollbot to your server.",
       );
       return;
     }
     if (isCommand(message, commands.CLOSE_POLL_COMMAND)) {
       await ctx.replyOrEdit(
-        "This command is obsolete. Please use the slash command `/poll close`. If slash commands aren't available, have a server admin re-invite pollbot to your server."
+        "This command is obsolete. Please use the slash command `/poll close`. If slash commands aren't available, have a server admin re-invite pollbot to your server.",
       );
       return;
     }
     if (isCommand(message, commands.POLL_RESULTS_COMMAND)) {
       await ctx.replyOrEdit(
-        "This command is obsolete. Please use the slash command `/poll results`. If slash commands aren't available, have a server admin re-invite pollbot to your server."
+        "This command is obsolete. Please use the slash command `/poll results`. If slash commands aren't available, have a server admin re-invite pollbot to your server.",
       );
       return;
     }
     if (isCommand(message, commands.AUDIT_POLL_COMMAND)) {
       await ctx.replyOrEdit(
-        "This command is obsolete. Please use the slash command `/poll audit`. If slash commands aren't available, have a server admin re-invite pollbot to your server."
+        "This command is obsolete. Please use the slash command `/poll audit`. If slash commands aren't available, have a server admin re-invite pollbot to your server.",
       );
       return;
     }
     if (isCommand(message, commands.SET_POLL_PROPERTIES_COMMAND)) {
       await ctx.replyOrEdit(
-        "This command is obsolete. Please use the slash command `/poll update`. If slash commands aren't available, have a server admin re-invite pollbot to your server."
+        "This command is obsolete. Please use the slash command `/poll update`. If slash commands aren't available, have a server admin re-invite pollbot to your server.",
       );
       return;
     }
     if (isCommand(message, commands.ADD_POLL_FEATURES_COMMAND)) {
       await ctx.replyOrEdit(
-        "This command is obsolete. Please use the slash command `/poll update`. If slash commands aren't available, have a server admin re-invite pollbot to your server."
+        "This command is obsolete. Please use the slash command `/poll update`. If slash commands aren't available, have a server admin re-invite pollbot to your server.",
       );
       return;
     }
     if (isCommand(message, commands.REMOVE_POLL_FEATURES_COMMAND)) {
       await ctx.replyOrEdit(
-        "This command is obsolete. Please use the slash command `/poll update`. If slash commands aren't available, have a server admin re-invite pollbot to your server."
+        "This command is obsolete. Please use the slash command `/poll update`. If slash commands aren't available, have a server admin re-invite pollbot to your server.",
       );
       return;
     }
     if (isCommand(message, commands.DELETE_MY_USER_DATA_COMMAND)) {
       await ctx.replyOrEdit(
-        "This command is obsolete. Please use the slash command `/delete_my_user_data`. If slash commands aren't available, have a server admin re-invite pollbot to your server."
+        "This command is obsolete. Please use the slash command `/delete_my_user_data`. If slash commands aren't available, have a server admin re-invite pollbot to your server.",
       );
       return;
     }
@@ -444,7 +456,7 @@ client.on("raw", async (packet) => {
 client.on("messageReactionAdd", async (reaction, user) => {
   const ctx = context.withMessageReaction(
     reaction as Discord.MessageReaction,
-    user as Discord.User
+    user as Discord.User,
   );
   try {
     if (!client.user?.id) {
@@ -470,12 +482,12 @@ client.on("messageReactionAdd", async (reaction, user) => {
       await commands.createBallot(
         ctx,
         (reaction as Discord.MessageReaction).message,
-        user
+        user,
       );
       return;
     }
     L.d(
-      `Couldn't find poll from reaction: ${reaction.emoji} on message ${reaction.message.id}...`
+      `Couldn't find poll from reaction: ${reaction.emoji} on message ${reaction.message.id}...`,
     );
   } catch {
     L.d("There was an error on reaction");

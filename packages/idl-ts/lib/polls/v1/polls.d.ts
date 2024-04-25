@@ -10,6 +10,8 @@ export declare enum PollFeatureDTO {
     ELECTION_POLL = 5,
     SENT_ELECTION_DMS = 6,
     FORCE_ALL_PREFERENCES = 7,
+    PACPS = 8,
+    CLOSE_ON_MAJORITY = 9,
     UNRECOGNIZED = -1
 }
 export declare function pollFeatureDTOFromJSON(object: any): PollFeatureDTO;

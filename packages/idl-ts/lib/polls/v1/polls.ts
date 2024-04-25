@@ -15,6 +15,8 @@ export enum PollFeatureDTO {
   ELECTION_POLL = 5,
   SENT_ELECTION_DMS = 6,
   FORCE_ALL_PREFERENCES = 7,
+  PACPS = 8,
+  CLOSE_ON_MAJORITY = 9,
   UNRECOGNIZED = -1,
 }
 
@@ -44,6 +46,12 @@ export function pollFeatureDTOFromJSON(object: any): PollFeatureDTO {
     case 7:
     case "FORCE_ALL_PREFERENCES":
       return PollFeatureDTO.FORCE_ALL_PREFERENCES;
+    case 8:
+    case "PACPS":
+      return PollFeatureDTO.PACPS;
+    case 9:
+    case "CLOSE_ON_MAJORITY":
+      return PollFeatureDTO.CLOSE_ON_MAJORITY;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -69,6 +77,10 @@ export function pollFeatureDTOToJSON(object: PollFeatureDTO): string {
       return "SENT_ELECTION_DMS";
     case PollFeatureDTO.FORCE_ALL_PREFERENCES:
       return "FORCE_ALL_PREFERENCES";
+    case PollFeatureDTO.PACPS:
+      return "PACPS";
+    case PollFeatureDTO.CLOSE_ON_MAJORITY:
+      return "CLOSE_ON_MAJORITY";
     default:
       return "UNKNOWN";
   }
@@ -198,20 +210,20 @@ export interface RoleDTO {
 
 class CollectionDTO<K, V> extends Map<K, V> {
   find<V2 extends V>(
-    fn: (value: V, key: K, collection: this) => value is V2
+    fn: (value: V, key: K, collection: this) => value is V2,
   ): V2 | undefined;
   find(fn: (value: V, key: K, collection: this) => unknown): V | undefined;
   find<This, V2 extends V>(
     fn: (this: This, value: V, key: K, collection: this) => value is V2,
-    thisArg: This
+    thisArg: This,
   ): V2 | undefined;
   find<This>(
     fn: (this: This, value: V, key: K, collection: this) => unknown,
-    thisArg: This
+    thisArg: This,
   ): V | undefined;
   find(
     fn: (value: V, key: K, collection: this) => unknown,
-    thisArg?: unknown
+    thisArg?: unknown,
   ): V | undefined {
     if (typeof fn !== "function")
       throw new TypeError(`${fn} is not a function`);
@@ -256,7 +268,7 @@ function createBaseReadPollRequest(): ReadPollRequest {
 export const ReadPollRequest = {
   encode(
     message: ReadPollRequest,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.id !== "") {
       writer.uint32(10).string(message.id);
@@ -295,7 +307,7 @@ export const ReadPollRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ReadPollRequest>, I>>(
-    object: I
+    object: I,
   ): ReadPollRequest {
     const message = createBaseReadPollRequest();
     message.id = object.id ?? "";
@@ -310,7 +322,7 @@ function createBaseReadPollResponse(): ReadPollResponse {
 export const ReadPollResponse = {
   encode(
     message: ReadPollResponse,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.poll !== undefined) {
       PollDTO.encode(message.poll, writer.uint32(10).fork()).ldelim();
@@ -350,7 +362,7 @@ export const ReadPollResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ReadPollResponse>, I>>(
-    object: I
+    object: I,
   ): ReadPollResponse {
     const message = createBaseReadPollResponse();
     message.poll =
@@ -368,12 +380,12 @@ function createBaseCreatePollRequest(): CreatePollRequest {
 export const CreatePollRequest = {
   encode(
     message: CreatePollRequest,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.pollRequest !== undefined) {
       PollRequestDTO.encode(
         message.pollRequest,
-        writer.uint32(10).fork()
+        writer.uint32(10).fork(),
       ).ldelim();
     }
     return writer;
@@ -415,7 +427,7 @@ export const CreatePollRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CreatePollRequest>, I>>(
-    object: I
+    object: I,
   ): CreatePollRequest {
     const message = createBaseCreatePollRequest();
     message.pollRequest =
@@ -433,7 +445,7 @@ function createBaseCreatePollResponse(): CreatePollResponse {
 export const CreatePollResponse = {
   encode(
     message: CreatePollResponse,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.poll !== undefined) {
       PollDTO.encode(message.poll, writer.uint32(10).fork()).ldelim();
@@ -473,7 +485,7 @@ export const CreatePollResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CreatePollResponse>, I>>(
-    object: I
+    object: I,
   ): CreatePollResponse {
     const message = createBaseCreatePollResponse();
     message.poll =
@@ -491,12 +503,12 @@ function createBaseUpdatePollRequest(): UpdatePollRequest {
 export const UpdatePollRequest = {
   encode(
     message: UpdatePollRequest,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.pollRequest !== undefined) {
       PollRequestDTO.encode(
         message.pollRequest,
-        writer.uint32(10).fork()
+        writer.uint32(10).fork(),
       ).ldelim();
     }
     return writer;
@@ -538,7 +550,7 @@ export const UpdatePollRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UpdatePollRequest>, I>>(
-    object: I
+    object: I,
   ): UpdatePollRequest {
     const message = createBaseUpdatePollRequest();
     message.pollRequest =
@@ -556,7 +568,7 @@ function createBaseUpdatePollResponse(): UpdatePollResponse {
 export const UpdatePollResponse = {
   encode(
     message: UpdatePollResponse,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.poll !== undefined) {
       PollDTO.encode(message.poll, writer.uint32(10).fork()).ldelim();
@@ -596,7 +608,7 @@ export const UpdatePollResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UpdatePollResponse>, I>>(
-    object: I
+    object: I,
   ): UpdatePollResponse {
     const message = createBaseUpdatePollResponse();
     message.poll =
@@ -614,7 +626,7 @@ function createBaseDeletePollRequest(): DeletePollRequest {
 export const DeletePollRequest = {
   encode(
     message: DeletePollRequest,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.pollId !== "") {
       writer.uint32(10).string(message.pollId);
@@ -653,7 +665,7 @@ export const DeletePollRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeletePollRequest>, I>>(
-    object: I
+    object: I,
   ): DeletePollRequest {
     const message = createBaseDeletePollRequest();
     message.pollId = object.pollId ?? "";
@@ -668,7 +680,7 @@ function createBaseDeletePollResponse(): DeletePollResponse {
 export const DeletePollResponse = {
   encode(
     message: DeletePollResponse,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.poll !== undefined) {
       PollDTO.encode(message.poll, writer.uint32(10).fork()).ldelim();
@@ -708,7 +720,7 @@ export const DeletePollResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeletePollResponse>, I>>(
-    object: I
+    object: I,
   ): DeletePollResponse {
     const message = createBaseDeletePollResponse();
     message.poll =
@@ -726,7 +738,7 @@ function createBaseVoteDTO(): VoteDTO {
 export const VoteDTO = {
   encode(
     message: VoteDTO,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.option !== "") {
       writer.uint32(10).string(message.option);
@@ -787,7 +799,7 @@ function createBaseBallotRequestDTO(): BallotRequestDTO {
 export const BallotRequestDTO = {
   encode(
     message: BallotRequestDTO,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.pollId !== "") {
       writer.uint32(10).string(message.pollId);
@@ -795,13 +807,13 @@ export const BallotRequestDTO = {
     if (message.context?.$case === "discord") {
       DiscordBallotContextDTO.encode(
         message.context.discord,
-        writer.uint32(18).fork()
+        writer.uint32(18).fork(),
       ).ldelim();
     }
     if (message.context?.$case === "web") {
       WebBallotContextDTO.encode(
         message.context.web,
-        writer.uint32(26).fork()
+        writer.uint32(26).fork(),
       ).ldelim();
     }
     return writer;
@@ -866,7 +878,7 @@ export const BallotRequestDTO = {
   },
 
   fromPartial<I extends Exact<DeepPartial<BallotRequestDTO>, I>>(
-    object: I
+    object: I,
   ): BallotRequestDTO {
     const message = createBaseBallotRequestDTO();
     message.pollId = object.pollId ?? "";
@@ -911,7 +923,7 @@ function createBaseBallotDTO(): BallotDTO {
 export const BallotDTO = {
   encode(
     message: BallotDTO,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.id !== "") {
       writer.uint32(10).string(message.id);
@@ -928,37 +940,37 @@ export const BallotDTO = {
     if (message.createdAt !== undefined) {
       Timestamp.encode(
         toTimestamp(message.createdAt),
-        writer.uint32(42).fork()
+        writer.uint32(42).fork(),
       ).ldelim();
     }
     if (message.updatedAt !== undefined) {
       Timestamp.encode(
         toTimestamp(message.updatedAt),
-        writer.uint32(50).fork()
+        writer.uint32(50).fork(),
       ).ldelim();
     }
     Object.entries(message.votes).forEach(([key, value]) => {
       BallotDTO_VotesEntry.encode(
         { key: key as any, value },
-        writer.uint32(58).fork()
+        writer.uint32(58).fork(),
       ).ldelim();
     });
     Object.entries(message.ballotOptionMapping).forEach(([key, value]) => {
       BallotDTO_BallotOptionMappingEntry.encode(
         { key: key as any, value },
-        writer.uint32(66).fork()
+        writer.uint32(66).fork(),
       ).ldelim();
     });
     if (message.context?.$case === "discord") {
       DiscordBallotContextDTO.encode(
         message.context.discord,
-        writer.uint32(74).fork()
+        writer.uint32(74).fork(),
       ).ldelim();
     }
     if (message.context?.$case === "web") {
       WebBallotContextDTO.encode(
         message.context.web,
-        writer.uint32(82).fork()
+        writer.uint32(82).fork(),
       ).ldelim();
     }
     return writer;
@@ -985,12 +997,12 @@ export const BallotDTO = {
           break;
         case 5:
           message.createdAt = fromTimestamp(
-            Timestamp.decode(reader, reader.uint32())
+            Timestamp.decode(reader, reader.uint32()),
           );
           break;
         case 6:
           message.updatedAt = fromTimestamp(
-            Timestamp.decode(reader, reader.uint32())
+            Timestamp.decode(reader, reader.uint32()),
           );
           break;
         case 7:
@@ -1002,7 +1014,7 @@ export const BallotDTO = {
         case 8:
           const entry8 = BallotDTO_BallotOptionMappingEntry.decode(
             reader,
-            reader.uint32()
+            reader.uint32(),
           );
           if (entry8.value !== undefined) {
             message.ballotOptionMapping[entry8.key] = entry8.value;
@@ -1046,7 +1058,7 @@ export const BallotDTO = {
               acc[key] = VoteDTO.fromJSON(value);
               return acc;
             },
-            {}
+            {},
           )
         : {},
       ballotOptionMapping: isObject(object.ballotOptionMapping)
@@ -1102,7 +1114,7 @@ export const BallotDTO = {
   },
 
   fromPartial<I extends Exact<DeepPartial<BallotDTO>, I>>(
-    object: I
+    object: I,
   ): BallotDTO {
     const message = createBaseBallotDTO();
     message.id = object.id ?? "";
@@ -1120,7 +1132,7 @@ export const BallotDTO = {
       return acc;
     }, {});
     message.ballotOptionMapping = Object.entries(
-      object.ballotOptionMapping ?? {}
+      object.ballotOptionMapping ?? {},
     ).reduce<{ [key: string]: string }>((acc, [key, value]) => {
       if (value !== undefined) {
         acc[key] = String(value);
@@ -1158,7 +1170,7 @@ function createBaseBallotDTO_VotesEntry(): BallotDTO_VotesEntry {
 export const BallotDTO_VotesEntry = {
   encode(
     message: BallotDTO_VotesEntry,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.key !== "") {
       writer.uint32(10).string(message.key);
@@ -1171,7 +1183,7 @@ export const BallotDTO_VotesEntry = {
 
   decode(
     input: _m0.Reader | Uint8Array,
-    length?: number
+    length?: number,
   ): BallotDTO_VotesEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
@@ -1209,7 +1221,7 @@ export const BallotDTO_VotesEntry = {
   },
 
   fromPartial<I extends Exact<DeepPartial<BallotDTO_VotesEntry>, I>>(
-    object: I
+    object: I,
   ): BallotDTO_VotesEntry {
     const message = createBaseBallotDTO_VotesEntry();
     message.key = object.key ?? "";
@@ -1228,7 +1240,7 @@ function createBaseBallotDTO_BallotOptionMappingEntry(): BallotDTO_BallotOptionM
 export const BallotDTO_BallotOptionMappingEntry = {
   encode(
     message: BallotDTO_BallotOptionMappingEntry,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.key !== "") {
       writer.uint32(10).string(message.key);
@@ -1241,7 +1253,7 @@ export const BallotDTO_BallotOptionMappingEntry = {
 
   decode(
     input: _m0.Reader | Uint8Array,
-    length?: number
+    length?: number,
   ): BallotDTO_BallotOptionMappingEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
@@ -1278,7 +1290,7 @@ export const BallotDTO_BallotOptionMappingEntry = {
   },
 
   fromPartial<
-    I extends Exact<DeepPartial<BallotDTO_BallotOptionMappingEntry>, I>
+    I extends Exact<DeepPartial<BallotDTO_BallotOptionMappingEntry>, I>,
   >(object: I): BallotDTO_BallotOptionMappingEntry {
     const message = createBaseBallotDTO_BallotOptionMappingEntry();
     message.key = object.key ?? "";
@@ -1294,7 +1306,7 @@ function createBaseDiscordBallotContextDTO(): DiscordBallotContextDTO {
 export const DiscordBallotContextDTO = {
   encode(
     message: DiscordBallotContextDTO,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.userId !== "") {
       writer.uint32(10).string(message.userId);
@@ -1307,7 +1319,7 @@ export const DiscordBallotContextDTO = {
 
   decode(
     input: _m0.Reader | Uint8Array,
-    length?: number
+    length?: number,
   ): DiscordBallotContextDTO {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
@@ -1344,7 +1356,7 @@ export const DiscordBallotContextDTO = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DiscordBallotContextDTO>, I>>(
-    object: I
+    object: I,
   ): DiscordBallotContextDTO {
     const message = createBaseDiscordBallotContextDTO();
     message.userId = object.userId ?? "";
@@ -1360,7 +1372,7 @@ function createBaseWebBallotContextDTO(): WebBallotContextDTO {
 export const WebBallotContextDTO = {
   encode(
     message: WebBallotContextDTO,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.userId !== "") {
       writer.uint32(10).string(message.userId);
@@ -1407,7 +1419,7 @@ export const WebBallotContextDTO = {
   },
 
   fromPartial<I extends Exact<DeepPartial<WebBallotContextDTO>, I>>(
-    object: I
+    object: I,
   ): WebBallotContextDTO {
     const message = createBaseWebBallotContextDTO();
     message.userId = object.userId ?? "";
@@ -1423,7 +1435,7 @@ function createBasePollRequestDTO(): PollRequestDTO {
 export const PollRequestDTO = {
   encode(
     message: PollRequestDTO,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.topic !== "") {
       writer.uint32(10).string(message.topic);
@@ -1431,7 +1443,7 @@ export const PollRequestDTO = {
     Object.entries(message.options).forEach(([key, value]) => {
       PollRequestDTO_OptionsEntry.encode(
         { key: key as any, value },
-        writer.uint32(18).fork()
+        writer.uint32(18).fork(),
       ).ldelim();
     });
     writer.uint32(26).fork();
@@ -1442,13 +1454,13 @@ export const PollRequestDTO = {
     if (message.context?.$case === "discord") {
       DiscordPollContextDTO.encode(
         message.context.discord,
-        writer.uint32(34).fork()
+        writer.uint32(34).fork(),
       ).ldelim();
     }
     if (message.context?.$case === "web") {
       WebPollContextDTO.encode(
         message.context.web,
-        writer.uint32(42).fork()
+        writer.uint32(42).fork(),
       ).ldelim();
     }
     return writer;
@@ -1467,7 +1479,7 @@ export const PollRequestDTO = {
         case 2:
           const entry2 = PollRequestDTO_OptionsEntry.decode(
             reader,
-            reader.uint32()
+            reader.uint32(),
           );
           if (entry2.value !== undefined) {
             message.options[entry2.key] = entry2.value;
@@ -1512,7 +1524,7 @@ export const PollRequestDTO = {
               acc[key] = String(value);
               return acc;
             },
-            {}
+            {},
           )
         : {},
       features: Array.isArray(object?.features)
@@ -1555,7 +1567,7 @@ export const PollRequestDTO = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PollRequestDTO>, I>>(
-    object: I
+    object: I,
   ): PollRequestDTO {
     const message = createBasePollRequestDTO();
     message.topic = object.topic ?? "";
@@ -1599,7 +1611,7 @@ function createBasePollRequestDTO_OptionsEntry(): PollRequestDTO_OptionsEntry {
 export const PollRequestDTO_OptionsEntry = {
   encode(
     message: PollRequestDTO_OptionsEntry,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.key !== "") {
       writer.uint32(10).string(message.key);
@@ -1612,7 +1624,7 @@ export const PollRequestDTO_OptionsEntry = {
 
   decode(
     input: _m0.Reader | Uint8Array,
-    length?: number
+    length?: number,
   ): PollRequestDTO_OptionsEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
@@ -1649,7 +1661,7 @@ export const PollRequestDTO_OptionsEntry = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PollRequestDTO_OptionsEntry>, I>>(
-    object: I
+    object: I,
   ): PollRequestDTO_OptionsEntry {
     const message = createBasePollRequestDTO_OptionsEntry();
     message.key = object.key ?? "";
@@ -1677,7 +1689,7 @@ function createBasePollDTO(): PollDTO {
 export const PollDTO = {
   encode(
     message: PollDTO,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.id !== "") {
       writer.uint32(10).string(message.id);
@@ -1691,13 +1703,13 @@ export const PollDTO = {
     if (message.createdAt !== undefined) {
       Timestamp.encode(
         toTimestamp(message.createdAt),
-        writer.uint32(34).fork()
+        writer.uint32(34).fork(),
       ).ldelim();
     }
     if (message.closesAt !== undefined) {
       Timestamp.encode(
         toTimestamp(message.closesAt),
-        writer.uint32(42).fork()
+        writer.uint32(42).fork(),
       ).ldelim();
     }
     if (message.topic !== "") {
@@ -1706,13 +1718,13 @@ export const PollDTO = {
     Object.entries(message.options).forEach(([key, value]) => {
       PollDTO_OptionsEntry.encode(
         { key: key as any, value },
-        writer.uint32(58).fork()
+        writer.uint32(58).fork(),
       ).ldelim();
     });
     Object.entries(message.ballots).forEach(([key, value]) => {
       PollDTO_BallotsEntry.encode(
         { key: key as any, value },
-        writer.uint32(66).fork()
+        writer.uint32(66).fork(),
       ).ldelim();
     });
     writer.uint32(74).fork();
@@ -1723,19 +1735,19 @@ export const PollDTO = {
     if (message.messageRef !== undefined) {
       MessageRefDTO.encode(
         message.messageRef,
-        writer.uint32(82).fork()
+        writer.uint32(82).fork(),
       ).ldelim();
     }
     if (message.context?.$case === "discord") {
       DiscordPollContextDTO.encode(
         message.context.discord,
-        writer.uint32(90).fork()
+        writer.uint32(90).fork(),
       ).ldelim();
     }
     if (message.context?.$case === "web") {
       WebPollContextDTO.encode(
         message.context.web,
-        writer.uint32(98).fork()
+        writer.uint32(98).fork(),
       ).ldelim();
     }
     return writer;
@@ -1759,12 +1771,12 @@ export const PollDTO = {
           break;
         case 4:
           message.createdAt = fromTimestamp(
-            Timestamp.decode(reader, reader.uint32())
+            Timestamp.decode(reader, reader.uint32()),
           );
           break;
         case 5:
           message.closesAt = fromTimestamp(
-            Timestamp.decode(reader, reader.uint32())
+            Timestamp.decode(reader, reader.uint32()),
           );
           break;
         case 6:
@@ -1836,7 +1848,7 @@ export const PollDTO = {
               acc[key] = String(value);
               return acc;
             },
-            {}
+            {},
           )
         : {},
       ballots: isObject(object.ballots)
@@ -1845,7 +1857,7 @@ export const PollDTO = {
               acc[key] = BallotDTO.fromJSON(value);
               return acc;
             },
-            {}
+            {},
           )
         : {},
       features: Array.isArray(object?.features)
@@ -1885,7 +1897,7 @@ export const PollDTO = {
               : entry[1]),
             members: entry[1].members,
           },
-        ])
+        ]),
       ));
     obj.options = {};
     if (message.options) {
@@ -1980,7 +1992,7 @@ function createBasePollDTO_OptionsEntry(): PollDTO_OptionsEntry {
 export const PollDTO_OptionsEntry = {
   encode(
     message: PollDTO_OptionsEntry,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.key !== "") {
       writer.uint32(10).string(message.key);
@@ -1993,7 +2005,7 @@ export const PollDTO_OptionsEntry = {
 
   decode(
     input: _m0.Reader | Uint8Array,
-    length?: number
+    length?: number,
   ): PollDTO_OptionsEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
@@ -2030,7 +2042,7 @@ export const PollDTO_OptionsEntry = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PollDTO_OptionsEntry>, I>>(
-    object: I
+    object: I,
   ): PollDTO_OptionsEntry {
     const message = createBasePollDTO_OptionsEntry();
     message.key = object.key ?? "";
@@ -2046,7 +2058,7 @@ function createBasePollDTO_BallotsEntry(): PollDTO_BallotsEntry {
 export const PollDTO_BallotsEntry = {
   encode(
     message: PollDTO_BallotsEntry,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.key !== "") {
       writer.uint32(10).string(message.key);
@@ -2059,7 +2071,7 @@ export const PollDTO_BallotsEntry = {
 
   decode(
     input: _m0.Reader | Uint8Array,
-    length?: number
+    length?: number,
   ): PollDTO_BallotsEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
@@ -2097,7 +2109,7 @@ export const PollDTO_BallotsEntry = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PollDTO_BallotsEntry>, I>>(
-    object: I
+    object: I,
   ): PollDTO_BallotsEntry {
     const message = createBasePollDTO_BallotsEntry();
     message.key = object.key ?? "";
@@ -2116,7 +2128,7 @@ function createBasePollMetricsDTO(): PollMetricsDTO {
 export const PollMetricsDTO = {
   encode(
     message: PollMetricsDTO,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.ballotsRequested !== 0) {
       writer.uint32(8).int32(message.ballotsRequested);
@@ -2169,7 +2181,7 @@ export const PollMetricsDTO = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PollMetricsDTO>, I>>(
-    object: I
+    object: I,
   ): PollMetricsDTO {
     const message = createBasePollMetricsDTO();
     message.ballotsRequested = object.ballotsRequested ?? 0;
@@ -2185,7 +2197,7 @@ function createBaseDiscordPollContextDTO(): DiscordPollContextDTO {
 export const DiscordPollContextDTO = {
   encode(
     message: DiscordPollContextDTO,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.guildId !== "") {
       writer.uint32(10).string(message.guildId);
@@ -2196,7 +2208,7 @@ export const DiscordPollContextDTO = {
     if (message.messageRef !== undefined) {
       MessageRefDTO.encode(
         message.messageRef,
-        writer.uint32(26).fork()
+        writer.uint32(26).fork(),
       ).ldelim();
     }
     return writer;
@@ -2204,7 +2216,7 @@ export const DiscordPollContextDTO = {
 
   decode(
     input: _m0.Reader | Uint8Array,
-    length?: number
+    length?: number,
   ): DiscordPollContextDTO {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
@@ -2251,7 +2263,7 @@ export const DiscordPollContextDTO = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DiscordPollContextDTO>, I>>(
-    object: I
+    object: I,
   ): DiscordPollContextDTO {
     const message = createBaseDiscordPollContextDTO();
     message.guildId = object.guildId ?? "";
@@ -2271,7 +2283,7 @@ function createBaseWebPollContextDTO(): WebPollContextDTO {
 export const WebPollContextDTO = {
   encode(
     message: WebPollContextDTO,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.ownerId !== "") {
       writer.uint32(10).string(message.ownerId);
@@ -2310,7 +2322,7 @@ export const WebPollContextDTO = {
   },
 
   fromPartial<I extends Exact<DeepPartial<WebPollContextDTO>, I>>(
-    object: I
+    object: I,
   ): WebPollContextDTO {
     const message = createBaseWebPollContextDTO();
     message.ownerId = object.ownerId ?? "";
@@ -2338,7 +2350,7 @@ export class PollsServiceClientImpl implements PollsService {
     const data = CreatePollRequest.encode(request).finish();
     const promise = this.rpc.request("polls.PollsService", "CreatePoll", data);
     return promise.then((data) =>
-      CreatePollResponse.decode(new _m0.Reader(data))
+      CreatePollResponse.decode(new _m0.Reader(data)),
     );
   }
 
@@ -2346,7 +2358,7 @@ export class PollsServiceClientImpl implements PollsService {
     const data = ReadPollRequest.encode(request).finish();
     const promise = this.rpc.request("polls.PollsService", "ReadPoll", data);
     return promise.then((data) =>
-      ReadPollResponse.decode(new _m0.Reader(data))
+      ReadPollResponse.decode(new _m0.Reader(data)),
     );
   }
 
@@ -2354,7 +2366,7 @@ export class PollsServiceClientImpl implements PollsService {
     const data = UpdatePollRequest.encode(request).finish();
     const promise = this.rpc.request("polls.PollsService", "UpdatePoll", data);
     return promise.then((data) =>
-      UpdatePollResponse.decode(new _m0.Reader(data))
+      UpdatePollResponse.decode(new _m0.Reader(data)),
     );
   }
 
@@ -2362,7 +2374,7 @@ export class PollsServiceClientImpl implements PollsService {
     const data = DeletePollRequest.encode(request).finish();
     const promise = this.rpc.request("polls.PollsService", "DeletePoll", data);
     return promise.then((data) =>
-      DeletePollResponse.decode(new _m0.Reader(data))
+      DeletePollResponse.decode(new _m0.Reader(data)),
     );
   }
 }
@@ -2371,7 +2383,7 @@ interface Rpc {
   request(
     service: string,
     method: string,
-    data: Uint8Array
+    data: Uint8Array,
   ): Promise<Uint8Array>;
 }
 

@@ -13,54 +13,62 @@ export const pollCreateCommand = new SlashCommandBuilder()
     option
       .setName("topic")
       .setDescription("The topic of the poll")
-      .setRequired(true)
+      .setRequired(true),
   )
   .addStringOption((option) =>
     option
       .setName("options")
       .setDescription("Comma-separated poll options")
-      .setRequired(true)
+      .setRequired(true),
   )
   .addBooleanOption((option) =>
     option
       .setName("randomized_ballots")
       .setDescription(
-        "Enables randomized ballot option ordering if true. (default: True)"
+        "Enables randomized ballot option ordering if true. (default: True)",
       )
-      .setRequired(false)
+      .setRequired(false),
   )
   .addBooleanOption((option) =>
     option
       .setName("anytime_results")
       .setDescription(
-        "Allows users to view results before the poll is closed. (default: True)"
+        "Allows users to view results before the poll is closed. (default: True)",
       )
-      .setRequired(false)
+      .setRequired(false),
   )
   .addBooleanOption((option) =>
     option
       .setName("preferential")
       .setDescription(
-        "Allows users to select preferences when voting. (default: True)"
+        "Allows users to select preferences when voting. (default: True)",
       )
-      .setRequired(false)
+      .setRequired(false),
   )
   .addBooleanOption((option) =>
     option
       .setName("ranked_pairs")
       .setDescription(
-        "Use ranked pairs voting instead of instant-runoff voting. (default: False)"
+        "Use ranked pairs voting instead of instant-runoff voting. (default: False)",
       )
-      .setRequired(false)
+      .setRequired(false),
   )
   .addBooleanOption((option) =>
     option
       .setName("force_all_preferences")
       .setDescription(
-        "Force users to include all preferences when answering ballots. (default: False)"
+        "Force users to include all preferences when answering ballots. (default: False)",
       )
-      .setRequired(false)
+      .setRequired(false),
   );
+// .addBooleanOption((option) =>
+//   option
+//     .setName("close_on_majority")
+//     .setDescription(
+//       "Automatically closes the poll if a majority of users have voted for the first option. (default: False)",
+//     )
+//     .setRequired(false),
+// );
 
 export const pollElectionCommand = new SlashCommandBuilder()
   .setName("poll_election")
@@ -69,7 +77,15 @@ export const pollElectionCommand = new SlashCommandBuilder()
     option
       .setName("candidates")
       .setDescription("Comma-separated candidate party names")
-      .setRequired(true)
+      .setRequired(true),
+  )
+  .addBooleanOption((option) =>
+    option
+      .setName("pacps")
+      .setDescription(
+        "Send 1 vote to each party instead of each individual. (default: False)",
+      )
+      .setRequired(false),
   );
 
 export const pollResultsCommand = new SlashCommandBuilder()
@@ -79,13 +95,13 @@ export const pollResultsCommand = new SlashCommandBuilder()
     option
       .setName("poll_id")
       .setDescription("The poll id to view results for")
-      .setRequired(true)
+      .setRequired(true),
   )
   .addBooleanOption((option) =>
     option
       .setName("private")
       .setDescription("Makes the command response private. (default: False)")
-      .setRequired(false)
+      .setRequired(false),
   );
 
 export const pollCloseCommand = new SlashCommandBuilder()
@@ -95,19 +111,19 @@ export const pollCloseCommand = new SlashCommandBuilder()
     option
       .setName("poll_id")
       .setDescription("The poll id to close")
-      .setRequired(true)
+      .setRequired(true),
   );
 
 export const pollAuditCommand = new SlashCommandBuilder()
   .setName("poll_audit")
   .setDescription(
-    "Audit a poll. Only the poll owner, admins, or pollbotAdmins can audit a poll."
+    "Audit a poll. Only the poll owner, admins, or pollbotAdmins can audit a poll.",
   )
   .addStringOption((option) =>
     option
       .setName("poll_id")
       .setDescription("The poll id to audit")
-      .setRequired(true)
+      .setRequired(true),
   );
 
 export const pollUpdateCommand = new SlashCommandBuilder()
@@ -117,67 +133,83 @@ export const pollUpdateCommand = new SlashCommandBuilder()
     option
       .setName("poll_id")
       .setDescription("The poll id to update")
-      .setRequired(true)
+      .setRequired(true),
   )
   .addStringOption((option) =>
-    option.setName("topic").setDescription("Update the poll's topic")
+    option.setName("topic").setDescription("Update the poll's topic"),
   )
   .addStringOption((option) =>
     option
       .setName("closes_at")
-      .setDescription("Update the poll's closing time. ISO-format")
+      .setDescription("Update the poll's closing time. ISO-format"),
   )
   .addBooleanOption((option) =>
     option
       .setName("randomized_ballots")
       .setDescription(
-        "Enables randomized ballot option ordering if true. (default: True)"
+        "Enables randomized ballot option ordering if true. (default: True)",
       )
-      .setRequired(false)
+      .setRequired(false),
   )
   .addBooleanOption((option) =>
     option
       .setName("anytime_results")
       .setDescription(
-        "Allows users to view results before the poll is closed. (default: True)"
+        "Allows users to view results before the poll is closed. (default: True)",
       )
-      .setRequired(false)
+      .setRequired(false),
   )
   .addBooleanOption((option) =>
     option
       .setName("preferential")
       .setDescription(
-        "Allows users to select preferences when voting. (default: True)"
+        "Allows users to select preferences when voting. (default: True)",
       )
-      .setRequired(false)
+      .setRequired(false),
   )
   .addBooleanOption((option) =>
     option
       .setName("ranked_pairs")
       .setDescription(
-        "Use ranked pairs voting instead of instant-runoff voting. (default: False)"
+        "Use ranked pairs voting instead of instant-runoff voting. (default: False)",
       )
-      .setRequired(false)
+      .setRequired(false),
   )
   .addBooleanOption((option) =>
     option
       .setName("force_all_preferences")
       .setDescription(
-        "Force users to include all preferences when answering ballots. (default: False)"
+        "Force users to include all preferences when answering ballots. (default: False)",
       )
-      .setRequired(false)
+      .setRequired(false),
+  )
+  .addBooleanOption((option) =>
+    option
+      .setName("pacps")
+      .setDescription(
+        "Send 1 vote to each party instead of each individual. (default: False)",
+      )
+      .setRequired(false),
   );
+// .addBooleanOption((option) =>
+//   option
+//     .setName("close_on_majority")
+//     .setDescription(
+//       "Automatically closes poll if a majority of users have voted for the first option. (default: False)",
+//     )
+//     .setRequired(false),
+// );
 
 export const deleteMyUserDataCommand = new SlashCommandBuilder()
   .setName("unsafe_delete_my_user_data")
   .setDescription(
-    `Deletes all of your polls and ballots. This is cannot be reversed.`
+    `Deletes all of your polls and ballots. This is cannot be reversed.`,
   )
   .addUserOption((option) =>
     option
       .setName("confirm_user")
       .setDescription("Confirm your account")
-      .setRequired(true)
+      .setRequired(true),
   );
 
 const nonHelpCommands = [
@@ -197,7 +229,7 @@ export const helpCommand = new SlashCommandBuilder()
     option
       .setName("public")
       .setDescription("Help message is visible to other users")
-      .setRequired(false)
+      .setRequired(false),
   )
   .addStringOption((option) =>
     option
@@ -210,9 +242,9 @@ export const helpCommand = new SlashCommandBuilder()
             Object({
               name: c.name,
               value: c.name,
-            }) as APIApplicationCommandOptionChoice<string>
-        )
-      )
+            }) as APIApplicationCommandOptionChoice<string>,
+        ),
+      ),
   );
 
 const okCommands = [...nonHelpCommands, helpCommand];
