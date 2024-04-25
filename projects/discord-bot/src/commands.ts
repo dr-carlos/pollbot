@@ -4,8 +4,6 @@ import {
   CommandInteraction,
   DiscordAPIError,
   GuildBasedChannel,
-  GuildChannel,
-  GuildChannelManager,
   GuildMember,
   Message,
   MessageActionRow,
@@ -17,7 +15,6 @@ import {
   PartialUser,
   Snowflake,
   Team,
-  ThreadChannel,
   ThreadMember,
   ThreadMemberManager,
   User,
@@ -733,16 +730,13 @@ function findPollId(message: Message | PartialMessage): string | undefined {
   return pollId;
 }
 
-function getNickname(ctx: Context): string | undefined {
-  // Return early if we don't have a member in our interaction
-  if (ctx.interaction == null) return;
-  if (!("member" in ctx.interaction)) return;
-
+function getNickname(message: Message | PartialMessage): string | undefined {
   return (
-    // Get nickname from ctx.interaction.member
-    (ctx.interaction.member instanceof GuildMember
-      ? ctx.interaction.member?.nickname
-      : ctx.interaction.member?.nick) ?? undefined
+    (message.member
+      ? message.member.nickname
+        ? message.member.nickname
+        : message.member.user.username
+      : message.author?.username) ?? undefined
   );
 }
 
@@ -786,7 +780,7 @@ export async function createBallotFromButton(ctx: Context<ButtonInteraction>) {
         ),
       );
 
-    const nickname = getNickname(ctx);
+    const nickname = getNickname(message);
     if (nickname)
       ballot = await storage.createBallot(poll, {
         pollId: poll.id,
@@ -812,7 +806,7 @@ export async function createBallotFromButton(ctx: Context<ButtonInteraction>) {
   }
 
   if (ballot.context === undefined) {
-    const nickname = getNickname(ctx);
+    const nickname = getNickname(message);
     if (nickname)
       ballot.context = {
         $case: "discord",
@@ -929,7 +923,7 @@ export async function createBallot(
         $case: "discord",
         discord: {
           userId: user.id,
-          userName: getNickname(ctx) ?? "",
+          userName: getNickname(message) ?? "",
         },
       },
     });
@@ -946,7 +940,7 @@ export async function createBallot(
     );
   }
 
-  const nickname = getNickname(ctx);
+  const nickname = getNickname(message);
   if (ballot.context === undefined && nickname != null) {
     ballot.context = {
       $case: "discord",
